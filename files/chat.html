@@ -1,0 +1,391 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1, maximum-scale=1"
+        name="viewport">
+  <title>Exported chat: ###CHATNAME###</title>
+  <style>
+        * {
+            -webkit-font-smoothing: antialiased
+        }
+
+        *,
+        :after,
+        :before {
+            box-sizing: border-box
+        }
+
+        .thread img {
+            transition: transform .25s ease
+        }
+
+        .thread img:hover {
+            -webkit-transform: scale(2);
+            transform: scale(2)
+        }
+
+        html {
+            margin: 0;
+            padding: 0;
+            font-family: "Segoe UI", system-ui, "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+            font-size: calc(1em * .625);
+            -webkit-tap-highlight-color: transparent
+        }
+
+        body {
+            background-color: #f3f2f1;
+            margin: 0;
+            padding: 20px 20px 0;
+            font-size: 1.4rem;
+            line-height: 1.4286;
+            color: #252423
+        }
+
+        :focus {
+            outline: 0
+        }
+
+        a {
+            color: #6264a7;
+            text-decoration: none
+        }
+
+        a:focus a:active,
+        a:hover {
+            color: #6264a7;
+            text-decoration: underline;
+            outline-offset: -2px;
+            outline: 0
+        }
+
+        .message-container {
+            margin-bottom: 20px
+        }
+
+        .message .them {
+            background-color: #fff;
+            padding: 10px;
+            border-radius: .3rem
+        }
+
+        .message .me {
+            background-color: #e5e5f1;
+            padding: 10px;
+            border-radius: .3rem
+        }
+
+        .message img {
+            max-width: 900px;
+            width: auto;
+            height: auto;
+
+        }
+
+        .message-container .message {
+            padding: 0 16px
+        }
+
+        .message-container .message div.attachment {
+            padding-left: 52px
+        }
+
+        .message-container.has-replies .message {
+            border-bottom: 1px solid #edebe9
+        }
+
+        .message-container .message {
+            word-wrap: break-word;
+            user-select: text;
+            overflow-x: visible;
+            position: relative
+        }
+
+        .message-container .message.important::before {
+            content: "!";
+            display: block;
+            position: absolute;
+            background-color: #c4314b;
+            color: #fff;
+            top: 18px;
+            right: -12px;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            font-size: 15.6px;
+            text-align: center;
+            border-radius: 100%;
+            font-weight: 700;
+            box-shadow: 0 .2rem .4rem -.075rem rgba(0, 0, 0, .5)
+        }
+
+        .message-container .message span[itemtype="http://schema.skype.com/Mention"] {
+            cursor: text;
+            color: #6264a7;
+            text-decoration: underline
+        }
+
+        .message-container .message .h1,
+        .message-container .message .h2,
+        .message-container .message .h3,
+        .message-container .message .h4,
+        .message-container .message .h5,
+        .message-container .message .h6,
+        .message-container .message h1,
+        .message-container .message h2,
+        .message-container .message h3,
+        .message-container .message h4,
+        .message-container .message h5,
+        .message-container .message h6 {
+            display: block;
+            font-family: inherit;
+            color: inherit;
+            margin: .3rem 0;
+            font-weight: 500;
+            line-height: 1.1
+        }
+
+        .message-container .message .h4,
+        .message-container .message .h5,
+        .message-container .message .h6,
+        .message-container .message h4,
+        .message-container .message h5,
+        .message-container .message h6 {
+            margin-top: 10px;
+            margin-bottom: 10px
+        }
+
+        .message-container .message h1 {
+            font-weight: 300;
+            font-size: 1.8rem;
+            line-height: 1.33333
+        }
+
+        .message-container .message h2 {
+            font-weight: 700;
+            font-size: 1.4rem;
+            line-height: 1.4286
+        }
+
+        .message-container .message h3 {
+            font-weight: 700;
+            font-size: 1.2rem;
+            line-height: 1.25
+        }
+
+        .message-container .message .h4,
+        .message-container .message h4 {
+            font-size: 2.4rem
+        }
+
+        .message-container .message .h5,
+        .message-container .message .h6,
+        .message-container .message h5,
+        .message-container .message h6 {
+            font-size: 1.4rem
+        }
+
+        .message-container .message blockquote {
+            border-left: 5px solid #eee;
+            font-size: 1.4rem;
+            background-color: rgba(37, 36, 35, .05);
+            color: #484644;
+            margin: .7rem 0;
+            padding: .7rem 1.6rem .7rem 1.1rem;
+            border-left: .4rem solid #e1dfdd
+        }
+
+        .message-container .message dl,
+        .message-container .message ol,
+        .message-container .message ul {
+            margin-bottom: 10px;
+            margin-top: 0
+        }
+
+        .message-container .message dl {
+            margin-bottom: 20px
+        }
+
+        .message-container .message dd,
+        .message-container .message dt {
+            line-height: 1.4286
+        }
+
+        .message-container .message dd {
+            margin-left: 0
+        }
+
+        .message-container .message .badge,
+        .message-container .message .label,
+        .message-container .message dt,
+        .message-container .message kbd kbd,
+        .message-container .message label {
+            font-weight: 700
+        }
+
+        .message-container .message .pre,
+        .message-container .message code,
+        .message-container .message kbd,
+        .message-container .message pre,
+        .message-container .message samp {
+            font-family: Menlo, Monaco, Consolas, "Courier New", Courier, monospace;
+            font-size: 1em
+        }
+
+        .message-container .message .pre,
+        .message-container .message code,
+        .message-container .message pre {
+            border-radius: .3rem;
+            background-color: rgba(37, 36, 35, .05);
+            font-size: 1.4rem;
+            color: #484644;
+            border: none
+        }
+
+        .message-container .message .pre,
+        .message-container .message pre {
+            padding: .7rem 1.6rem .6rem;
+            margin: .7rem 0
+        }
+
+        .message-container .message code {
+            line-height: 2rem;
+            display: inline-block;
+            padding: 0 .4rem;
+            vertical-align: baseline
+        }
+
+        .message-container .message kbd {
+            font-size: 90%;
+            padding: 2px 4px;
+            color: #fff;
+            background-color: #333;
+            border-radius: 3px;
+            box-shadow: inset 0 -1px 0 rgba(0, 0, 0, .25)
+        }
+
+        .message-container .message hr,
+        .message-container .message img,
+        .message-container .message span.caret {
+            border: 0
+        }
+
+        .message-container .message hr {
+            margin-top: 20px;
+            margin-bottom: 20px;
+            border-top: 1px solid #c8c6c4;
+            box-sizing: content-box;
+            height: 0
+        }
+
+        .message-container .message .copy-paste-table,
+        .message-container .message .ts-table,
+        .message-container .message table {
+            border-collapse: collapse
+        }
+
+        .message-container .message table {
+            border-spacing: 0;
+            font-size: inherit;
+            line-height: inherit;
+            font-style: inherit;
+            margin-bottom: 20px
+        }
+
+        .message-container .message td,
+        .message-container .message th {
+            padding: 0
+        }
+
+        .message-container .message .dropdown-menu,
+        .message-container .message caption,
+        .message-container .message th {
+            text-align: left
+        }
+
+        .message-container .message caption {
+            padding-top: 8px;
+            padding-bottom: 8px;
+            color: #777
+        }
+
+        .message-container .message address {
+            line-height: 1.4286;
+            margin-bottom: 20px
+        }
+
+        .message-container .message .glyphicon,
+        .message-container .message .popover,
+        .message-container .message .tooltip,
+        .message-container .message address {
+            font-style: normal
+        }
+
+        .message-container .message p {
+            margin: 0;
+            padding: 0
+        }
+
+        .message-container .message canvas,
+        .message-container .message img {
+            image-rendering: crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: -moz-crisp-edges
+        }
+
+        .message-container .message abbr[data-original-title],
+        .message-container .message abbr[title] {
+            cursor: help;
+            border-bottom: 1px dotted #777
+        }
+
+        .message-container .message b,
+        .message-container .message optgroup,
+        .message-container .message strong {
+            font-weight: 700
+        }
+
+        .message-container .message dfn {
+            font-style: italic
+        }
+
+        .message-container .message .label,
+        .message-container .message audio,
+        .message-container .message canvas,
+        .message-container .message progress,
+        .message-container .message sub,
+        .message-container .message sup,
+        .message-container .message video {
+            vertical-align: baseline
+        }
+
+        .message-container .message sub,
+        .message-container .message sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        .message-container .message sub {
+            bottom: -.25em
+        }
+
+        .message-container .message sup {
+            top: -.5em
+        }
+
+        .container {
+            max-width: 1024px;
+            margin: 0 auto
+        }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>###CHATNAME###</h1>
+    <div id="messages">
+      ###MESSAGES###
+    </div>
+  </div>
+</body>
+</html>
