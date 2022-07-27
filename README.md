@@ -32,7 +32,7 @@ The repository contains a PowerShell script that allows you to export your Micro
 
 ## Contribute
 
-Feel free to contribute and make this script better! Licensed is MIT
+Feel free to contribute and make this script better! License is MIT
 
 ## Ideas
 
