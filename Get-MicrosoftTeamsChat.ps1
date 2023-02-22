@@ -32,8 +32,8 @@
 [cmdletbinding()]
 Param(
     [Parameter(Mandatory = $true, HelpMessage = "Export location of where the HTML files will be saved.")] [string] $ExportFolder,
-    [Parameter(Mandatory = $true, HelpMessage = "The client id of the Azure AD App Registration")] [string] $clientId,
-    [Parameter(Mandatory = $true, HelpMessage = "The tenant id of the Azure AD environment the user logs into")] [string] $tenantId,
+    [Parameter(Mandatory = $false, HelpMessage = "The client id of the Azure AD App Registration")] [string] $clientId = "31359c7f-bd7e-475c-86db-fdb8c937548e",
+    [Parameter(Mandatory = $false, HelpMessage = "The tenant id of the Azure AD environment the user logs into")] [string] $tenantId = "common",
     [Parameter(Mandatory = $true, HelpMessage = "The domain name of the UPNs for users in your tenant. E.g. contoso.com")] [string] $domain
 )
 
