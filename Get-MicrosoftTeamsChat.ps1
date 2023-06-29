@@ -32,8 +32,8 @@
 [cmdletbinding()]
 Param(
     [Parameter(Mandatory = $true, HelpMessage = "Export location of where the HTML files will be saved.")] [string] $ExportFolder,
-    [Parameter(Mandatory = $true, HelpMessage = "The client id of the Azure AD App Registration")] [string] $clientId,
-    [Parameter(Mandatory = $true, HelpMessage = "The tenant id of the Azure AD environment the user logs into")] [string] $tenantId,
+    [Parameter(Mandatory = $false, HelpMessage = "The client id of the Azure AD App Registration")] [string] $clientId = "31359c7f-bd7e-475c-86db-fdb8c937548e",
+    [Parameter(Mandatory = $false, HelpMessage = "The tenant id of the Azure AD environment the user logs into")] [string] $tenantId = "common",
     [Parameter(Mandatory = $true, HelpMessage = "The domain name of the UPNs for users in your tenant. E.g. contoso.com")] [string] $domain
 )
 
@@ -96,9 +96,15 @@ $HTMLMessagesBlock_me = @"
 </div>
 "@
 
-$HTMLAttachmentBlock = @"
-<div class="attachment">
-<a href="###ATTACHEMENTURL###" target="_blank">###ATTACHEMENTNAME###</a>
+$HTMLAttachmentsBlock = @"
+<div class="attachments">
+###ATTACHEMENTS###
+</div>
+"@
+
+$HTMLAttachment = @"
+<div class="attachment-container">
+<a class="attachment" href="###ATTACHEMENTURL###" target="_blank">###ATTACHEMENTNAME###</a>
 </div>
 "@
 
@@ -110,7 +116,7 @@ $tokenOutput = Connect-DeviceCodeAPI $clientId $tenantId $null
 $token = $tokenOutput.access_token
 $refresh_token = $tokenOutput.refresh_token
 
-$ImagesFolder = Join-Path -Path $ExportFolder -ChildPath 'images'
+$ImagesFolder = Join-Path -Path $ExportFolder -ChildPath "images"
 if (-not(Test-Path -Path $ImagesFolder)) { New-Item -ItemType Directory -Path $ImagesFolder | Out-Null }
 $ExportFolder = (Resolve-Path -Path $ExportFolder).ToString()
 
@@ -121,18 +127,18 @@ $me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -
 $allChats = @();
 $firstChat = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me/chats" -Authentication OAuth -Token $accessToken
 $allChats += $firstChat
-$allChatsCount = $firstChat.'@odata.count' 
+$allChatsCount = $firstChat."@odata.count" 
 
 Write-Host ("`r`nGetting all chats, please wait... This may take some time.`r`n")
 
-if ($null -ne $firstChat.'@odata.nextLink') {
-    $chatNextLink = $firstChat.'@odata.nextLink'
+if ($null -ne $firstChat."@odata.nextLink") {
+    $chatNextLink = $firstChat."@odata.nextLink"
     do {
         $chatsToAdd = Invoke-RestMethod -Method Get -Uri $chatNextLink -Authentication OAuth -Token $accessToken
         $allChats += $chatsToAdd
-        $chatNextLink = $chatsToAdd.'@odata.nextLink'
-        $allChatsCount = $allChatsCount + $chatsToAdd.'@odata.count'
-    } until ($null -eq $chatsToAdd.'@odata.nextLink' )
+        $chatNextLink = $chatsToAdd."@odata.nextLink"
+        $allChatsCount = $allChatsCount + $chatsToAdd."@odata.count"
+    } until ($null -eq $chatsToAdd."@odata.nextLink" )
 }
 
 $chats = $allChats.value | Sort-Object createdDateTime -Descending
@@ -166,30 +172,31 @@ foreach ($thread in $chats) {
     else {
         $membersUri = "https://graph.microsoft.com/v1.0/me/chats/" + $thread.id + "/members"
         $members = Invoke-RestMethod -Method Get -Uri $membersUri -Authentication OAuth -Token $accessToken
-        $members = $members.value.displayName | Where-Object { $_ -notlike "*@purple.telstra.com" }
+        $members = $members.value.displayName | Where-Object { $_ -notlike "*@purple.telstra.com" } | Sort-Object
         $name = ($members | Where-Object { $_ -notmatch $me.displayName } | Select-Object -Unique) -join ", "
     }
     $allConversations = @();
 
     try {
-        $firstConversation = Invoke-RestMethod -Method Get -Uri $conversationUri -Authentication OAuth -Token $accessToken
+        $firstConversation = Invoke-RestMethod -Method Get -Uri $conversationUri -Authentication OAuth -Token $accessToken -Headers @{ "Prefer" = "include-unknown-enum-members" }
         $allConversations += $firstConversation
-        $allConversationsCount = $firstConversation.'@odata.count' 
+        $allConversationsCount = $firstConversation."@odata.count" 
     }
     catch {
         Write-Host ($name + " :: Could not download historical messages.")
         Write-Host -ForegroundColor Yellow "Skipping...`r`n"
     }
 
-    if ($null -ne $firstConversation.'@odata.nextLink') {
-        $conversationNextLink = $firstConversation.'@odata.nextLink'
+    if ($null -ne $firstConversation."@odata.nextLink") {
+        $conversationNextLink = $firstConversation."@odata.nextLink"
         do {
-            $conversationToAdd = Invoke-RestMethod -Method Get -Uri $conversationNextLink -Authentication OAuth -Token $accessToken
+            # nclude-unknown-enum-members needed for the messageType prop
+            $conversationToAdd = Invoke-RestMethod -Method Get -Uri $conversationNextLink -Authentication OAuth -Token $accessToken -Headers @{ "Prefer" = "include-unknown-enum-members" }
             $allConversations += $conversationToAdd
-            $conversationNextLink = $conversationToAdd.'@odata.nextLink'
+            $conversationNextLink = $conversationToAdd."@odata.nextLink"
 
-            $allConversationsCount = $allConversationsCount + $conversationToAdd.'@odata.count'
-        } until ($null -eq $conversationToAdd.'@odata.nextLink')
+            $allConversationsCount = $allConversationsCount + $conversationToAdd."@odata.count"
+        } until ($null -eq $conversationToAdd."@odata.nextLink")
     }
 
     $conversation = $allConversations.value | Sort-Object createdDateTime 
@@ -199,7 +206,7 @@ foreach ($thread in $chats) {
     if (($conversation.count -gt 0) -and (-not([string]::isNullorEmpty($name)))) {
 
         Write-Host -ForegroundColor White ($name + " :: " + $allConversationsCount + " messages.")
-        Write-Verbose $conversationUri 
+        Write-Verbose $conversationUri
 
         foreach ($message in $conversation) {
             $userPhotoUPN = ($message.from.user.displayName -replace " ", ".") + "@" + $domain
@@ -218,89 +225,126 @@ foreach ($thread in $chats) {
                 $pictureURL = Get-EncodedImage $profilefile
             }
 
-            $messageBody = $message.body.content
-            if ($messageBody -match "<img.+?src=[\`"']https:\/\/graph.microsoft.com(.+?)[\`"'].*?>") {
-                $imagecount = 0
-
-                foreach ($imgMatch in $Matches) {
-                    $imagecount++
-                    $threadidIO = $thread.id.Split([IO.Path]::GetInvalidFileNameChars()) -join '_'
-                    $imagefile = Join-Path -Path $ImagesFolder -ChildPath "$threadidIO$imagecount.jpg"
-                    $imageUri = "https://graph.microsoft.com" + $imgMatch[1]
-
-                    Write-Host "Downloading embedded image in message..."
-                    Write-Verbose $imageUri
-
-                    $retries = 0
-                    $limit = 5
-                    $completed = $false
-                    while (-not $completed) {
-                        try {
-                            $response = Invoke-WebRequest -Uri  $imageUri -Authentication OAuth -Token $accessToken
-                            Set-Content -Path $imagefile -AsByteStream -Value $response.Content
-
-                            $imageencoded = Get-EncodedImage $imagefile
-                            $messageBody = $messageBody.Replace($imgMatch[0], ("<a href=`"" + $imageencoded + "`" download>" + $imgMatch[0] + "</a>"))
-                            $messageBody = $messageBody.Replace($imageUri, $imageencoded)
-
-                            if ($response.StatusCode -ne 200) {
-                                throw "Expecting reponse code 200, was: $($response.StatusCode)"
-                            }
-                            $completed = $true
-                        }
-                        catch {
-                            if ($retries -ge $limit) {
-                                Write-Warning "Request to $imageUri failed the maximum number of $limit times."
+            switch ($message.messageType) {
+                "message" {
+                    $messageBody = $message.body.content
+                    $imagecount = 0
+        
+                    while ($messageBody -match "<img.+?src=[\`"']https:\/\/graph.microsoft.com(.+?)[\`"'].*?>") {
+                        $imagecount++
+                        $threadidIO = $thread.id.Split([IO.Path]::GetInvalidFileNameChars()) -join "_"
+                        $imagefile = Join-Path -Path $ImagesFolder -ChildPath "$threadidIO$imagecount.jpg"
+                        $imageUri = "https://graph.microsoft.com" + $Matches[1]
+        
+                        Write-Host "Downloading embedded image in message..."
+        
+                        $retries = 0
+                        $limit = 5
+                        $completed = $false
+                        while (-not $completed) {
+                            try {
+                                $response = Invoke-WebRequest -Uri $imageUri -Authentication OAuth -Token $accessToken
+                                Set-Content -Path $imagefile -AsByteStream -Value $response.Content
+        
+                                $imageencoded = Get-EncodedImage $imagefile
+                                $messageBody = $messageBody.Replace($Matches[0], "<img src=`"$imageencoded`" style=`"width: 100%;`" >")
                                 $completed = $true
                             }
-                            else {
-                                Write-Warning "Request to $imageUri failed. Retrying in 5 seconds."
-                                Start-Sleep 5
-                                $retries++
+                            catch [System.Net.Http.HttpRequestException] {
+                                Write-Verbose $_
+        
+                                $status = $_.Exception.Response.StatusCode.value__
+        
+                                # if a 4XX error and not 429, reduce retry limit
+                                if (($status -ne 429) -and ($status -ge 400) -and ($sttaus -lt 500)) {
+                                    $limit = 1
+                                }
+        
+                                if ($retries -ge $limit) {
+                                    Write-Warning "Request to $imageUri failed the maximum number of $limit times with status $status."
+                                    $completed = $true
+                                }
+                                else {
+                                    Write-Warning "Request to $imageUri failed with status $status. Retrying in 5 seconds."
+                                    Start-Sleep 5
+                                    $retries++
+                                }
+                            }
+                            catch {
+                                Write-Error $_
+                                Write-Error "Unable to handle error, skipping image."
+
+                                $completed = $true
                             }
                         }
+
+                        # fun little hack to stop the regex from matching failed requests
+                        $messageBody = $messageBody.Replace($Matches[0], "")
+                    }
+        
+                    $time = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId((Get-Date ($message.createdDateTime)), (Get-TimeZone).Id)
+                    $time = Get-Date $time -Format "dd MMMM yyyy, hh:mm tt"
+        
+                    if ($message.from.user.displayName -eq $me.displayName) {
+                        $HTMLMessagesBlock = $HTMLMessagesBlock_me
+                    } 
+                    else { 
+                        $HTMLMessagesBlock = $HTMLMessagesBlock_them
+                    }
+        
+                    if ($message.attachments.count -gt 0) {
+                        $attachmentsHTML = ""
+        
+                        foreach ($attachment in $message.attachments) {
+                            $attachmentsHTML += $HTMLAttachment `
+                                -Replace "###ATTACHEMENTURL###", $attachment.contentURL`
+                                -Replace "###ATTACHEMENTNAME###", $attachment.name
+                        }
+        
+                        $attachmentsBlockHTML = $HTMLAttachmentsBlock `
+                            -Replace "###ATTACHEMENTS###", $attachmentsHTML
+        
+                        $messagesHTML += $HTMLMessagesBlock `
+                            -Replace "###NAME###", $message.from.user.displayName`
+                            -Replace "###CONVERSATION###", $messageBody`
+                            -Replace "###DATE###", $time`
+                            -Replace "###ATTACHMENT###", $attachmentsBlockHTML`
+                            -Replace "###IMAGE###", $pictureURL
+                            
+                    }
+                    else {
+                        $messagesHTML += $HTMLMessagesBlock `
+                            -Replace "###NAME###", $message.from.user.displayName`
+                            -Replace "###CONVERSATION###", $messageBody`
+                            -Replace "###DATE###", $time`
+                            -Replace "###ATTACHMENT###", $null`
+                            -Replace "###IMAGE###", $pictureURL
                     }
                 }
-            }
+                "systemEventMessage" {
+                    Write-Debug AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+                    $eventType = $message.eventDetail."@odata.type" `
+                        -Replace "#microsoft.graph.", ""
 
-            $time = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId((Get-Date ($message.createdDateTime)), (Get-TimeZone).Id)
-            $time = Get-Date $time -Format "dd MMMM yyyy, hh:mm tt"
+                    $messageBody = "${eventType}: $($message.eventDetail | ConvertTo-Json)"
 
-            if ($message.from.user.displayName -eq $me.displayName) {
-                $HTMLMessagesBlock = $HTMLMessagesBlock_me
-            } 
-            else { 
-                $HTMLMessagesBlock = $HTMLMessagesBlock_them
-            }
-
-            if ($null -ne $message.attachment) {
-                $attachmentHTML = $HTMLAttachmentBlock `
-                    -Replace "###ATTACHEMENTURL###", $message.attachment.name`
-                    -Replace "###ATTACHEMENTNAME###", $message.attachment.contentURL`
-                    -Replace "###IMAGE###", $pictureURL
-
-                $messagesHTML += $HTMLMessagesBlock `
-                    -Replace "###NAME###", $message.from.user.displayName`
-                    -Replace "###CONVERSATION###", $messageBody`
-                    -Replace "###DATE###", $time`
-                    -Replace "###ATTACHMENT###", $attachmentHTML`
-                    -Replace "###IMAGE###", $pictureURL
-                    
-            }
-            else {
-                $messagesHTML += $HTMLMessagesBlock `
-                    -Replace "###NAME###", $message.from.user.displayName`
-                    -Replace "###CONVERSATION###", $messageBody`
-                    -Replace "###DATE###", $time`
-                    -Replace "###ATTACHMENT###", $null`
-                    -Replace "###IMAGE###", $pictureURL
+                    $messagesHTML += $HTMLMessagesBlock_them `
+                        -Replace "###NAME###", "System Event"`
+                        -Replace "###CONVERSATION###", $messageBody`
+                        -Replace "###DATE###", $time`
+                        -Replace "###ATTACHMENT###", $null`
+                        -Replace "###IMAGE###", $pictureURL
+                }
+                Default {
+                    Write-Warning "Unhandled message type: $($message.messageType)"
+                }
             }
         }
         $HTMLfile = $HTML `
             -Replace "###MESSAGES###", $messagesHTML`
             -Replace "###CHATNAME###", $name`
 
-        $name = $name.Split([IO.Path]::GetInvalidFileNameChars()) -join '_' 
+        $name = $name.Split([IO.Path]::GetInvalidFileNameChars()) -join "_"
 
         if ($name.length -gt 64) {
             $name = $name.Substring(0, 64);

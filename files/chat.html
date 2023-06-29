@@ -86,8 +86,21 @@
             padding: 0 16px
         }
 
-        .message-container .message div.attachment {
-            padding-left: 52px
+        .message-container .message div.attachments {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .message-container .message div.attachment-container {
+            width: fit-content;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            background-color: rgb(212 212 212);
+        }
+
+        .message-container .message a.attachment {
+            color: rgb(0 0 0);
+
         }
 
         .message-container.has-replies .message {
