@@ -97,13 +97,15 @@ $HTMLMessagesBlock_me = @"
 "@
 
 $HTMLAttachmentsBlock = @"
-<div class="attachmentS">
+<div class="attachments">
 ###ATTACHEMENTS###
 </div>
 "@
 
 $HTMLAttachment = @"
-<a href="###ATTACHEMENTURL###" target="_blank">###ATTACHEMENTNAME###</a>
+<div class="attachment-container">
+<a class="attachment" href="###ATTACHEMENTURL###" target="_blank">###ATTACHEMENTNAME###</a>
+</div>
 "@
 
 
