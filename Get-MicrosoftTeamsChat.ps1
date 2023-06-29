@@ -96,10 +96,14 @@ $HTMLMessagesBlock_me = @"
 </div>
 "@
 
-$HTMLAttachmentBlock = @"
-<div class="attachment">
-<a href="###ATTACHEMENTURL###" target="_blank">###ATTACHEMENTNAME###</a>
+$HTMLAttachmentsBlock = @"
+<div class="attachmentS">
+###ATTACHEMENTS###
 </div>
+"@
+
+$HTMLAttachment = @"
+<a href="###ATTACHEMENTURL###" target="_blank">###ATTACHEMENTNAME###</a>
 "@
 
 
@@ -136,6 +140,7 @@ if ($null -ne $firstChat.'@odata.nextLink') {
 }
 
 $chats = $allChats.value | Sort-Object createdDateTime -Descending
+$chats = $chats | Where-Object { $_.id -eq "19:5a5a9ca1-071b-44d0-b944-50046c72f5b0_9ddc3637-6d0d-4ae1-8132-e92cfc1d3a95@unq.gbl.spaces" }
 Write-Host ("`r`n" + $chats.count + " possible chat threads found.`r`n")
 
 $threadCount = 0
@@ -166,7 +171,7 @@ foreach ($thread in $chats) {
     else {
         $membersUri = "https://graph.microsoft.com/v1.0/me/chats/" + $thread.id + "/members"
         $members = Invoke-RestMethod -Method Get -Uri $membersUri -Authentication OAuth -Token $accessToken
-        $members = $members.value.displayName | Where-Object { $_ -notlike "*@purple.telstra.com" }
+        $members = $members.value.displayName | Where-Object { $_ -notlike "*@purple.telstra.com" } | Sort-Object
         $name = ($members | Where-Object { $_ -notmatch $me.displayName } | Select-Object -Unique) -join ", "
     }
     $allConversations = @();
@@ -199,7 +204,7 @@ foreach ($thread in $chats) {
     if (($conversation.count -gt 0) -and (-not([string]::isNullorEmpty($name)))) {
 
         Write-Host -ForegroundColor White ($name + " :: " + $allConversationsCount + " messages.")
-        Write-Verbose $conversationUri 
+        Write-Verbose $conversationUri
 
         foreach ($message in $conversation) {
             $userPhotoUPN = ($message.from.user.displayName -replace " ", ".") + "@" + $domain
@@ -219,46 +224,52 @@ foreach ($thread in $chats) {
             }
 
             $messageBody = $message.body.content
-            if ($messageBody -match "<img.+?src=[\`"']https:\/\/graph.microsoft.com(.+?)[\`"'].*?>") {
-                $imagecount = 0
+            $imagecount = 0
 
-                foreach ($imgMatch in $Matches) {
-                    $imagecount++
-                    $threadidIO = $thread.id.Split([IO.Path]::GetInvalidFileNameChars()) -join '_'
-                    $imagefile = Join-Path -Path $ImagesFolder -ChildPath "$threadidIO$imagecount.jpg"
-                    $imageUri = "https://graph.microsoft.com" + $imgMatch[1]
+            while ($messageBody -match "<img.+?src=[\`"']https:\/\/graph.microsoft.com(.+?)[\`"'].*?>") {
+                $imagecount++
+                $threadidIO = $thread.id.Split([IO.Path]::GetInvalidFileNameChars()) -join '_'
+                $imagefile = Join-Path -Path $ImagesFolder -ChildPath "$threadidIO$imagecount.jpg"
+                $imageUri = "https://graph.microsoft.com" + $Matches[1]
 
-                    Write-Host "Downloading embedded image in message..."
-                    Write-Verbose $imageUri
+                Write-Host "Downloading embedded image in message..."
 
-                    $retries = 0
-                    $limit = 5
-                    $completed = $false
-                    while (-not $completed) {
-                        try {
-                            $response = Invoke-WebRequest -Uri  $imageUri -Authentication OAuth -Token $accessToken
-                            Set-Content -Path $imagefile -AsByteStream -Value $response.Content
+                $retries = 0
+                $limit = 5
+                $completed = $false
+                while (-not $completed) {
+                    try {
+                        $response = Invoke-WebRequest -Uri $imageUri -Authentication OAuth -Token $accessToken
+                        Set-Content -Path $imagefile -AsByteStream -Value $response.Content
 
-                            $imageencoded = Get-EncodedImage $imagefile
-                            $messageBody = $messageBody.Replace($imgMatch[0], ("<a href=`"" + $imageencoded + "`" download>" + $imgMatch[0] + "</a>"))
-                            $messageBody = $messageBody.Replace($imageUri, $imageencoded)
+                        $imageencoded = Get-EncodedImage $imagefile
+                        $messageBody = $messageBody.Replace($Matches[0], "<img src=`"$imageencoded`" style=`"width: 100%;`" >")
+                        $completed = $true
+                    }
+                    catch [System.Net.Http.HttpRequestException] {
+                        Write-Verbose $_
 
-                            if ($response.StatusCode -ne 200) {
-                                throw "Expecting reponse code 200, was: $($response.StatusCode)"
-                            }
+                        $status = $_.Exception.Response.StatusCode.value__
+
+                        # if a 4XX error and not 429, reduce retry limit
+                        if (($status -ne 429) -and ($status -ge 400) -and ($sttaus -lt 500)) {
+                            $retries = 1
+                        }
+
+                        if ($retries -ge $limit) {
+                            Write-Warning "Request to $imageUri failed the maximum number of $limit times with status $status."
                             $completed = $true
                         }
-                        catch {
-                            if ($retries -ge $limit) {
-                                Write-Warning "Request to $imageUri failed the maximum number of $limit times."
-                                $completed = $true
-                            }
-                            else {
-                                Write-Warning "Request to $imageUri failed. Retrying in 5 seconds."
-                                Start-Sleep 5
-                                $retries++
-                            }
+                        else {
+                            Write-Warning "Request to $imageUri failed with status $status. Retrying in 5 seconds."
+                            Start-Sleep 5
+                            $retries++
                         }
+                    }
+                    catch {
+                        Write-Error $_
+                        Write-Error "Unable to handle error, skipping image."
+                        break;
                     }
                 }
             }
@@ -273,17 +284,29 @@ foreach ($thread in $chats) {
                 $HTMLMessagesBlock = $HTMLMessagesBlock_them
             }
 
-            if ($null -ne $message.attachment) {
-                $attachmentHTML = $HTMLAttachmentBlock `
-                    -Replace "###ATTACHEMENTURL###", $message.attachment.name`
-                    -Replace "###ATTACHEMENTNAME###", $message.attachment.contentURL`
-                    -Replace "###IMAGE###", $pictureURL
+            Write-Host $message.attachments
+
+            if ($message.attachments.count -gt 0) {
+                $attachmentsHTML = ""
+
+                foreach ($attachment in $message.attachments) {
+                    $attachmentsHTML += $HTMLAttachment `
+                        -Replace "###ATTACHEMENTURL###", $attachment.contentURL `
+                        -Replace "###ATTACHEMENTNAME###", $attachment.NAME
+                }
+
+                Write-Host $attachmentsHTML
+
+                $attachmentsBlockHTML = $HTMLAttachmentsBlock `
+                    -Replace "###ATTACHEMENTS###", $attachmentsHTML
+
+                Write-Host $attachmentsBlockHTML
 
                 $messagesHTML += $HTMLMessagesBlock `
                     -Replace "###NAME###", $message.from.user.displayName`
                     -Replace "###CONVERSATION###", $messageBody`
                     -Replace "###DATE###", $time`
-                    -Replace "###ATTACHMENT###", $attachmentHTML`
+                    -Replace "###ATTACHMENT###", $attachmentsBlockHTML`
                     -Replace "###IMAGE###", $pictureURL
                     
             }
