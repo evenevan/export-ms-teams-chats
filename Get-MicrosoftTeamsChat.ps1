@@ -142,6 +142,7 @@ if ($null -ne $firstChat."@odata.nextLink") {
 }
 
 $chats = $allChats.value | Sort-Object createdDateTime -Descending
+$chats = $allChats.value | Where-Object { $_.id -eq "19:a53f20641c35442f92c005c9f4edb60f@thread.v2" } | Sort-Object createdDateTime -Descending
 Write-Host ("`r`n" + $chats.count + " possible chat threads found.`r`n")
 
 $threadCount = 0
@@ -291,11 +292,13 @@ foreach ($thread in $chats) {
                     else { 
                         $HTMLMessagesBlock = $HTMLMessagesBlock_them
                     }
+
+                    $fileAttachments = $message.attachments | Where-Object { $_.contentType -eq "reference" }
         
-                    if ($message.attachments.count -gt 0) {
+                    if ($fileAttachments.count -gt 0) {
                         $attachmentsHTML = ""
         
-                        foreach ($attachment in $message.attachments) {
+                        foreach ($attachment in $fileAttachments) {
                             $attachmentsHTML += $HTMLAttachment `
                                 -Replace "###ATTACHEMENTURL###", $attachment.contentURL`
                                 -Replace "###ATTACHEMENTNAME###", $attachment.name
