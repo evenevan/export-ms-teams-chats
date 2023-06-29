@@ -140,7 +140,6 @@ if ($null -ne $firstChat.'@odata.nextLink') {
 }
 
 $chats = $allChats.value | Sort-Object createdDateTime -Descending
-$chats = $chats | Where-Object { $_.id -eq "19:5a5a9ca1-071b-44d0-b944-50046c72f5b0_9ddc3637-6d0d-4ae1-8132-e92cfc1d3a95@unq.gbl.spaces" }
 Write-Host ("`r`n" + $chats.count + " possible chat threads found.`r`n")
 
 $threadCount = 0
@@ -284,8 +283,6 @@ foreach ($thread in $chats) {
                 $HTMLMessagesBlock = $HTMLMessagesBlock_them
             }
 
-            Write-Host $message.attachments
-
             if ($message.attachments.count -gt 0) {
                 $attachmentsHTML = ""
 
@@ -295,12 +292,8 @@ foreach ($thread in $chats) {
                         -Replace "###ATTACHEMENTNAME###", $attachment.NAME
                 }
 
-                Write-Host $attachmentsHTML
-
                 $attachmentsBlockHTML = $HTMLAttachmentsBlock `
                     -Replace "###ATTACHEMENTS###", $attachmentsHTML
-
-                Write-Host $attachmentsBlockHTML
 
                 $messagesHTML += $HTMLMessagesBlock `
                     -Replace "###NAME###", $message.from.user.displayName`
