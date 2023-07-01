@@ -9,7 +9,7 @@ function Get-Chats ($clientId, $tenantId) {
     $start = Get-Date
 
     while ($null -ne $link) {
-        $chatsToAdd = Retry-Code -Code {
+        $chatsToAdd = Invoke-Retry -Code {
             Invoke-RestMethod -Method Get -Uri $link -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
         }
         

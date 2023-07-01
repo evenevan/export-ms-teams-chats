@@ -2,7 +2,7 @@
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 
-function Retry-Code {
+function Invoke-Retry {
     param(
         [ScriptBlock]$code,
         [int]$maxRetries = 1,

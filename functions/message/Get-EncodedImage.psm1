@@ -18,7 +18,7 @@ function Get-EncodedImage ($imageTagMatch, $imageFolderPath, $clientId, $tenantI
         try {
             $start = Get-Date
 
-            Retry-Code -Code {
+            Invoke-Retry -Code {
                 Invoke-WebRequest -Uri $imageUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -OutFile $imageFile
             }
 

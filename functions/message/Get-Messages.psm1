@@ -10,7 +10,7 @@ function Get-Messages ($thread, $clientId, $tenantId) {
     $start = Get-Date
 
     while ($null -ne $link) {
-        $messagesToAdd = Retry-Code -Code { 
+        $messagesToAdd = Invoke-Retry -Code { 
             Invoke-RestMethod -Method Get -Uri $link -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -Headers @{ "Prefer" = "include-unknown-enum-members" }
         }
         

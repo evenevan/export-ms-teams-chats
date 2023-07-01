@@ -21,7 +21,7 @@ function Get-EncodedProfilePicture($userId, $imageFolderPath, $clientId, $tenant
         try {
             $start = Get-Date
 
-            Retry-Code -Code {
+            Invoke-Retry -Code {
                 Invoke-WebRequest -Uri $profilePhotoUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -OutFile $profilePictureFile
             }
 

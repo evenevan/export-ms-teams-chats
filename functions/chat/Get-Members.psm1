@@ -7,7 +7,7 @@ function Get-Members ($chat, $clientId, $tenantId) {
 
     $membersUri = "https://graph.microsoft.com/v1.0/chats/" + $chat.id + "/members"
 
-    $members = Retry-Code -Code {
+    $members = Invoke-Retry -Code {
         Invoke-RestMethod -Method Get -Uri $membersUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
     }
 

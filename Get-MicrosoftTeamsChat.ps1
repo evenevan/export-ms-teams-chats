@@ -44,9 +44,11 @@ Set-Location $PSScriptRoot
 
 $verbose = $PSBoundParameters["verbose"]
 
-Get-ChildItem "$PSScriptRoot/functions/*.psm1" | ForEach-Object { Import-Module $_.FullName -Force -ArgumentList $verbose }
-Import-Module ($PSScriptRoot + "/functions/Get-GraphAccessToken.psm1") -Force -Global -ArgumentList $verbose
-Import-Module ($PSScriptRoot + "/functions/Retry-Code.psm1") -Force -Global -ArgumentList $verbose
+Get-ChildItem "$PSScriptRoot/functions/chat/*.psm1" | ForEach-Object { Import-Module $_.FullName -Force -ArgumentList $verbose }
+Get-ChildItem "$PSScriptRoot/functions/message/*.psm1" | ForEach-Object { Import-Module $_.FullName -Force -ArgumentList $verbose }
+Import-Module "$PSScriptRoot/functions/ConvertTo-Base64Image.psm1" -Force -ArgumentList $verbose
+Import-Module "$PSScriptRoot/functions/Get-GraphAccessToken.psm1" -Force -Global -ArgumentList $verbose
+Import-Module "$PSScriptRoot/functions/Invoke-Retry.psm1" -Force -Global -ArgumentList $verbose
 
 ####################################
 ##   HTML  ##
@@ -173,7 +175,7 @@ foreach ($chat in $chats) {
         $name = $name.Split([IO.Path]::GetInvalidFileNameChars()) -join "_"
 
         if ($name.length -gt 64) {
-            $name = $name.Substring(0, 64);
+            $name = $name.Substring(0, 64)
         }
 
         $file = Join-Path -Path $exportFolder -ChildPath "$name.html"
