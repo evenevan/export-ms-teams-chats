@@ -69,14 +69,14 @@ $me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -
 
 Write-Host ("Getting all chats, please wait... This may take some time.")
 $chats = Get-Chats $clientId $tenantId
-Write-Host ("" + $chats.count + " possible chat threads found.")
+Write-Host ("" + $chats.count + " possible chat chats found.")
 
-$threadCount = 0
+$chatCount = 0
 
-foreach ($thread in $chats) {
-    $members = Get-Members $thread $clientId $tenantId
-    $name = ConvertTo-ChatName $thread $members $me $clientId $tenantId
-    $messages = Get-Messages $thread $clientId $tenantId
+foreach ($chat in $chats) {
+    $members = Get-Members $chat $clientId $tenantId
+    $name = ConvertTo-ChatName $chat $members $me $clientId $tenantId
+    $messages = Get-Messages $chat $clientId $tenantId
 
     #### download all pf before as base64 and just use later
     # Write-Host "Downloading all profile pictures..."
@@ -86,7 +86,7 @@ foreach ($thread in $chats) {
     #     Get-EncodedProfilePicture $member.userId $imagesFolder $clientId $tenantId
     # }
 
-    $threadCount++
+    $chatCount++
     $messagesHTML = $null
 
     if (($messages.count -gt 0) -and (-not([string]::isNullorEmpty($name)))) {
@@ -177,7 +177,7 @@ foreach ($thread in $chats) {
         }
 
         $file = Join-Path -Path $exportFolder -ChildPath "$name.html"
-        if (Test-Path $file) { $file = ($file -Replace ".html", ( "(" + $threadCount + ")" + ".html")) }
+        if (Test-Path $file) { $file = ($file -Replace ".html", ( "(" + $chatCount + ")" + ".html")) }
         Write-Host -ForegroundColor Green "Exporting $file... `r`n"
         $HTMLfile | Out-File -FilePath $file
     }
@@ -186,5 +186,6 @@ foreach ($thread in $chats) {
         Write-Host -ForegroundColor Yellow "Skipping...`r`n"
     }
 }
+
 Remove-Item -Path $imagesFolder -Recurse
 Write-Host -ForegroundColor Cyan "`r`nScript completed... Bye!"
