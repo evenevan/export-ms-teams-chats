@@ -3,7 +3,6 @@ Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 
 # probably better to save the encoded pictures to the files so duplciates don't have to recalculate
-
 function Get-EncodedImage ($imageTagMatch, $imageFolderPath, $clientId, $tenantId) {
     $imageUriPath = $imageTagMatch.Groups[1].Value
     $imageFileName = ($imageUriPath -replace "^.*/hostedContents/(.*)/\`$value$", '$1')

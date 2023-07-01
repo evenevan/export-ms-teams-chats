@@ -13,5 +13,5 @@ function Get-Members ($chat, $clientId, $tenantId) {
 
     Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to get $($members.count) members."
 
-    $members
+    $members.value
 }

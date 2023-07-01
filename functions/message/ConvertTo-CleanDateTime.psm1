@@ -2,7 +2,7 @@
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 
-function ConvertTo-CleanTimeDate ($iso) {
+function ConvertTo-CleanDateTime ($iso) {
     $time = [System.TimeZoneInfo]::ConvertTimeBySystemTimeZoneId((Get-Date ($iso)), (Get-TimeZone).Id)
-    $time = Get-Date $time -Format "dd MMMM yyyy, hh:mm tt"
+    Get-Date $time -Format "dd MMMM yyyy, hh:mm tt"
 }

@@ -2,9 +2,9 @@
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 
-function Get-Messages ($thread, $clientId, $tenantId) {
+function Get-Messages ($chat, $clientId, $tenantId) {
     #50 is the maximum allowed with the beta api
-    $link = "https://graph.microsoft.com/v1.0/chats/" + $thread.id + "/messages?top=50"
+    $link = "https://graph.microsoft.com/v1.0/chats/" + $chat.id + "/messages?top=50"
     $messages = @();
 
     $start = Get-Date

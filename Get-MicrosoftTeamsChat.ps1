@@ -80,13 +80,12 @@ foreach ($chat in $chats) {
     $name = ConvertTo-ChatName $chat $members $me $clientId $tenantId
     $messages = Get-Messages $chat $clientId $tenantId
 
-    #### download all pf before as base64 and just use later
-    # Write-Host "Downloading all profile pictures..."
+    # download all profile pictures for use later
+    Write-Host "Downloading all profile pictures..."
 
-    # download and cache all profile pictures, TODO: make seperate function to only download
-    # foreach ($member in $members) {
-    #     Get-EncodedProfilePicture $member.userId $imagesFolder $clientId $tenantId
-    # }
+    foreach ($member in $members) {
+        Save-EncodedProfilePicture $member.userId $imagesFolder $clientId $tenantId
+    }
 
     $chatCount++
     $messagesHTML = $null
@@ -96,7 +95,7 @@ foreach ($chat in $chats) {
         Write-Host -ForegroundColor White ($name + " :: " + $messages.count + " messages.")
 
         foreach ($message in $messages) {
-            $encodedProfilePicture = Get-EncodedProfilePicture $message.from.user.id $imagesFolder $clientId $tenantId
+            $encodedProfilePicture = Get-EncodedProfilePicture $message.from.user.id $imagesFolder
 
             switch ($message.messageType) {
                 "message" {
@@ -110,7 +109,7 @@ foreach ($chat in $chats) {
                         $messageBody = $messageBody.Replace($imageTagMatch.Groups[0], "<img src=`"$encodedImage`" style=`"width: 100%;`" >")
                     }
         
-                    $time = ConvertTo-CleanTimeDate $message.createdDateTime
+                    $time = ConvertTo-CleanDateTime $message.createdDateTime
         
                     if ($message.from.user.displayName -eq $me.displayName) {
                         $HTMLMessagesBlock = $HTMLMessagesBlock_me
