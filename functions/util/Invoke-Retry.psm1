@@ -1,12 +1,13 @@
 [cmdletbinding()]
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
+$ProgressPreference = "SilentlyContinue"
 
 function Invoke-Retry {
     param(
         [ScriptBlock]$code,
-        [int]$maxRetries = 1,
-        [int]$delaySeconds = 1
+        [int]$maxRetries = 2,
+        [int]$delaySeconds = 2
     )
 
     $retryCount = 0

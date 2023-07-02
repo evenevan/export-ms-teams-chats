@@ -1,6 +1,7 @@
 [cmdletbinding()]
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
+$ProgressPreference = "SilentlyContinue"
 
 function Get-Messages ($chat, $clientId, $tenantId) {
     #50 is the maximum allowed with the beta api

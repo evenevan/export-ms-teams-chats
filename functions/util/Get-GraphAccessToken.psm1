@@ -1,6 +1,7 @@
 [cmdletbinding()]
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
+$ProgressPreference = "SilentlyContinue"
 
 $Scope = "Chat.Read, User.Read, User.ReadBasic.All, offline_access"
 

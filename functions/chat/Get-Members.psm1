@@ -1,6 +1,7 @@
 [cmdletbinding()]
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
+$ProgressPreference = "SilentlyContinue"
 
 function Get-Members ($chat, $clientId, $tenantId) {
     $start = Get-Date

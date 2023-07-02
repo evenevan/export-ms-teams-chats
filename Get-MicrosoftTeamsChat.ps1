@@ -46,9 +46,8 @@ $verbose = $PSBoundParameters["verbose"]
 
 Get-ChildItem "$PSScriptRoot/functions/chat/*.psm1" | ForEach-Object { Import-Module $_.FullName -Force -ArgumentList $verbose }
 Get-ChildItem "$PSScriptRoot/functions/message/*.psm1" | ForEach-Object { Import-Module $_.FullName -Force -ArgumentList $verbose }
-Import-Module "$PSScriptRoot/functions/ConvertTo-Base64Image.psm1" -Force -ArgumentList $verbose
-Import-Module "$PSScriptRoot/functions/Get-GraphAccessToken.psm1" -Force -Global -ArgumentList $verbose
-Import-Module "$PSScriptRoot/functions/Invoke-Retry.psm1" -Force -Global -ArgumentList $verbose
+Get-ChildItem "$PSScriptRoot/functions/user/*.psm1" | ForEach-Object { Import-Module $_.FullName -Force -ArgumentList $verbose }
+Get-ChildItem "$PSScriptRoot/functions/util/*.psm1" | ForEach-Object { Import-Module $_.FullName -Force -Global -ArgumentList $verbose }
 
 ####################################
 ##   HTML  ##
@@ -57,10 +56,10 @@ Import-Module "$PSScriptRoot/functions/Invoke-Retry.psm1" -Force -Global -Argume
 $HTML = Get-Content -Raw ./files/chat.html
 $HTMLMessagesBlock_them = Get-Content -Raw ./files/message/other.html
 $HTMLMessagesBlock_me = Get-Content -Raw ./files/message/me.html
-$HTMLAttachmentsBlock = Get-Content -Raw ./files/message/attachment/block.html
-$HTMLAttachment = Get-Content -Raw ./files/message/attachment/attachment.html
 
 #Script
+$start = Get-Date
+
 Write-Host -ForegroundColor Cyan "`r`nStarting script..."
 
 $imagesFolder = Join-Path -Path $exportFolder -ChildPath "images"
@@ -73,26 +72,23 @@ Write-Host ("Getting all chats, please wait... This may take some time.")
 $chats = Get-Chats $clientId $tenantId
 Write-Host ("" + $chats.count + " possible chat chats found.")
 
-$chatCount = 0
-
 foreach ($chat in $chats) {
     $members = Get-Members $chat $clientId $tenantId
     $name = ConvertTo-ChatName $chat $members $me $clientId $tenantId
     $messages = Get-Messages $chat $clientId $tenantId
 
-    # download all profile pictures for use later
-    Write-Host "Downloading all profile pictures..."
-
-    foreach ($member in $members) {
-        Save-EncodedProfilePicture $member.userId $imagesFolder $clientId $tenantId
-    }
-
-    $chatCount++
     $messagesHTML = $null
 
     if (($messages.count -gt 0) -and (-not([string]::isNullorEmpty($name)))) {
 
         Write-Host -ForegroundColor White ($name + " :: " + $messages.count + " messages.")
+
+        # download profile pictures for use later
+        Write-Host "Downloading profile pictures..."
+
+        foreach ($member in $members) {
+            Save-EncodedProfilePicture $member.userId $imagesFolder $clientId $tenantId
+        }
 
         foreach ($message in $messages) {
             $encodedProfilePicture = Get-EncodedProfilePicture $message.from.user.id $imagesFolder
@@ -118,55 +114,31 @@ foreach ($chat in $chats) {
                         $HTMLMessagesBlock = $HTMLMessagesBlock_them
                     }
 
-                    $fileAttachments = $message.attachments | Where-Object { $_.contentType -eq "reference" }
-        
-                    if ($fileAttachments.count -gt 0) {
-                        $attachmentsHTML = ""
-        
-                        foreach ($attachment in $fileAttachments) {
-                            $attachmentsHTML += $HTMLAttachment `
-                                -Replace "###ATTACHEMENTURL###", $attachment.contentURL`
-                                -Replace "###ATTACHEMENTNAME###", $attachment.name
-                        }
-        
-                        $attachmentsBlockHTML = $HTMLAttachmentsBlock `
-                            -Replace "###ATTACHEMENTS###", $attachmentsHTML
-        
-                        $messagesHTML += $HTMLMessagesBlock `
-                            -Replace "###NAME###", $message.from.user.displayName`
-                            -Replace "###CONVERSATION###", $messageBody`
-                            -Replace "###DATE###", $time`
-                            -Replace "###ATTACHMENT###", $attachmentsBlockHTML`
-                            -Replace "###IMAGE###", $encodedProfilePicture
-                            
-                    }
-                    else {
-                        $messagesHTML += $HTMLMessagesBlock `
-                            -Replace "###NAME###", $message.from.user.displayName`
-                            -Replace "###CONVERSATION###", $messageBody`
-                            -Replace "###DATE###", $time`
-                            -Replace "###ATTACHMENT###", $null`
-                            -Replace "###IMAGE###", $encodedProfilePicture
-                    }
+                    $messagesHTML += $HTMLMessagesBlock `
+                        -Replace "###NAME###", $message.from.user.displayName `
+                        -Replace "###CONVERSATION###", $messageBody `
+                        -Replace "###DATE###", $time `
+                        -Replace "###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments) `
+                        -Replace "###IMAGE###", $encodedProfilePicture
+
+                    Break
                 }
                 "systemEventMessage" {
-                    $eventType = $message.eventDetail."@odata.type" `
-                        -Replace "#microsoft.graph.", ""
-
-                    $messageBody = "${eventType}: $($message.eventDetail | ConvertTo-Json -Depth 5)"
-
                     $messagesHTML += $HTMLMessagesBlock_them `
-                        -Replace "###NAME###", "System Event"`
-                        -Replace "###CONVERSATION###", $messageBody`
-                        -Replace "###DATE###", $time`
-                        -Replace "###ATTACHMENT###", $null`
+                        -Replace "###NAME###", "System Event" `
+                        -Replace "###CONVERSATION###", (ConvertTo-SystemEventMessage $message.eventDetail $clientId $tenantId) `
+                        -Replace "###DATE###", $time `
+                        -Replace "###ATTACHMENTS###", $null `
                         -Replace "###IMAGE###", $encodedProfilePicture
+
+                    Break
                 }
                 Default {
                     Write-Warning "Unhandled message type: $($message.messageType)"
                 }
             }
         }
+
         $HTMLfile = $HTML `
             -Replace "###MESSAGES###", $messagesHTML`
             -Replace "###CHATNAME###", $name`
@@ -178,7 +150,6 @@ foreach ($chat in $chats) {
         }
 
         $file = Join-Path -Path $exportFolder -ChildPath "$name.html"
-        if (Test-Path $file) { $file = ($file -Replace ".html", ( "(" + $chatCount + ")" + ".html")) }
         Write-Host -ForegroundColor Green "Exporting $file... `r`n"
         $HTMLfile | Out-File -FilePath $file
     }
@@ -189,4 +160,4 @@ foreach ($chat in $chats) {
 }
 
 Remove-Item -Path $imagesFolder -Recurse
-Write-Host -ForegroundColor Cyan "`r`nScript completed... Bye!"
+Write-Host -ForegroundColor Cyan "`r`nScript completed after $(((Get-Date) - $start).TotalSeconds)s... Bye!"
