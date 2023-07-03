@@ -23,17 +23,17 @@ function ConvertTo-SystemEventMessage ($eventDetail, $clientId, $tenantId) {
         }
         "#microsoft.graph.membersDeletedEventMessageDetail" {
             $users = $eventDetail.members | Select-Object -ExpandProperty "id" | Select-Object -Unique | Sort-Object | ForEach-Object { try { Get-User $_ $clientId $tenantId } catch { $_ } }
-            "Removed $(($users | Select-Object -ExpandProperty "displayName") -join ", ")."
-            Break
-        }
-        "#microsoft.graph.membersJoinedEventMessageDetail" {
-            $users = $eventDetail.members | Select-Object -ExpandProperty "id" | Select-Object -Unique | Sort-Object | ForEach-Object { try { Get-User $_ $clientId $tenantId } catch { $_ } }
-            "$(($users | Select-Object -ExpandProperty "displayName") -join ", ") joined."
-            Break
-        }
-        "#microsoft.graph.membersLeftEventMessageDetail" {
-            $users = $eventDetail.members | Select-Object -ExpandProperty "id" | Select-Object -Unique | Sort-Object | ForEach-Object { try { Get-User $_ $clientId $tenantId } catch { $_ } }
-            "$(($users | Select-Object -ExpandProperty "displayName") -join ", ") left."
+
+            if (
+                ($users.count -eq 1) -and
+                ($null -ne $eventDetail.initiator.user) -and
+                ($eventDetail.initiator.user.id -eq $users[0].id)
+            ) {
+                "$($users[0].displayName) left."
+            } else {
+                "Removed $(($users | Select-Object -ExpandProperty "displayName") -join ", ")."
+            }
+            
             Break
         }
         "#microsoft.graph.messagePinnedEventMessageDetail" {

@@ -4,13 +4,13 @@ $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 $ProgressPreference = "SilentlyContinue"
 
 # probably better to save the encoded pictures to the files so duplciates don't have to recalculate
-function Get-EncodedImage ($imageTagMatch, $imageFolderPath, $clientId, $tenantId) {
+function Get-Image ($imageTagMatch, $imageFolderPath, $clientId, $tenantId) {
     $imageUriPath = $imageTagMatch.Groups[1].Value
-    $imageFileName = ($imageUriPath -replace "^.*/hostedContents/(.*)/\`$value$", '$1')
-    $imageFileName = $imageFileName.substring(0, [System.Math]::Min(250, $imageFileName.Length))
-    $imageFile = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$imageFolderPath" -ChildPath "$imageFileName.jpg"
+    $imageUriPathStream = [IO.MemoryStream]::new([byte[]][char[]]$imageUriPath)
+    $imageFileName = "$((Get-FileHash -InputStream $imageUriPathStream -Algorithm SHA256).Hash).jpg"
+    $imageFilePath = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$imageFolderPath" -ChildPath "$imageFileName"
 
-    if (-not(Test-Path $imageFile)) {
+    if (-not(Test-Path $imageFilePath)) {
         Write-Verbose "Image cache miss, downloading."
 
         $imageUri = "https://graph.microsoft.com" + $imageUriPath
@@ -19,21 +19,21 @@ function Get-EncodedImage ($imageTagMatch, $imageFolderPath, $clientId, $tenantI
             $start = Get-Date
 
             Invoke-Retry -Code {
-                Invoke-WebRequest -Uri $imageUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -OutFile $imageFile
+                Invoke-WebRequest -Uri $imageUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -OutFile $imageFilePath
             }
 
             Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to download image."
 
-            $imageEncoded = ConvertTo-Base64Image $imageFile
+            $imageEncoded = "images/$imageFileName"
         }
         catch {
-            Write-Verbose "Unable to fetch and encode image, returning input."
+            Write-Verbose "Unable to fetch image, returning input."
             $imageEncoded = $imageUri
         }
     }
     else {
         Write-Verbose "Image cache hit."
-        $imageEncoded = ConvertTo-Base64Image $imageFile
+        $imageEncoded = "images/$imageFileName"
     }
 
     $imageEncoded

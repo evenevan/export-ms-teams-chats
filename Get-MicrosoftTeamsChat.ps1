@@ -87,11 +87,11 @@ foreach ($chat in $chats) {
         Write-Host "Downloading profile pictures..."
 
         foreach ($member in $members) {
-            Save-EncodedProfilePicture $member.userId $imagesFolder $clientId $tenantId
+            Get-ProfilePicture $member.userId $imagesFolder $clientId $tenantId | Out-Null
         }
 
         foreach ($message in $messages) {
-            $encodedProfilePicture = Get-EncodedProfilePicture $message.from.user.id $imagesFolder
+            $encodedProfilePicture = Get-ProfilePicture $message.from.user.id $imagesFolder $clientId $tenantId
 
             switch ($message.messageType) {
                 "message" {
@@ -101,7 +101,7 @@ foreach ($chat in $chats) {
 
                     foreach ($imageTagMatch in $imageTagMatches) {
                         Write-Host "Downloading embedded image in message..."
-                        $encodedImage = Get-EncodedImage $imageTagMatch $imagesFolder $clientId $tenantId
+                        $encodedImage = Get-Image $imageTagMatch $imagesFolder $clientId $tenantId
                         $messageBody = $messageBody.Replace($imageTagMatch.Groups[0], "<img src=`"$encodedImage`" style=`"width: 100%;`" >")
                     }
         
@@ -159,5 +159,4 @@ foreach ($chat in $chats) {
     }
 }
 
-Remove-Item -Path $imagesFolder -Recurse
 Write-Host -ForegroundColor Cyan "`r`nScript completed after $(((Get-Date) - $start).TotalSeconds)s... Bye!"
