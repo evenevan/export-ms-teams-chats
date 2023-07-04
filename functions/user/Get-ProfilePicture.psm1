@@ -41,7 +41,7 @@ function Get-ProfilePicture ($userId, $imageFolderPath, $clientId, $tenantId) {
             "images/$userId.jpg"
         }
         catch {
-            Write-Verbose "Unable to fetch profile picture."
+            Write-Verbose "Failed to fetch profile picture."
             $defaultProfilePicture
         }
     }

@@ -115,7 +115,7 @@ foreach ($chat in $chats) {
                     }
 
                     $messagesHTML += $HTMLMessagesBlock `
-                        -Replace "###NAME###", $message.from.user.displayName `
+                        -Replace "###NAME###", (Get-Initiator $message.from clientId $tenantId) `
                         -Replace "###CONVERSATION###", $messageBody `
                         -Replace "###DATE###", $time `
                         -Replace "###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments) `

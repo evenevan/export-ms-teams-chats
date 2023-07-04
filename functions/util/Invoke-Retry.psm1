@@ -7,7 +7,7 @@ function Invoke-Retry {
     param(
         [ScriptBlock]$code,
         [int]$maxRetries = 2,
-        [int]$delaySeconds = 2
+        [int]$delaySeconds = 1
     )
 
     $retryCount = 0

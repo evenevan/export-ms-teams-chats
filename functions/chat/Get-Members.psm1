@@ -8,8 +8,14 @@ function Get-Members ($chat, $clientId, $tenantId) {
 
     $membersUri = "https://graph.microsoft.com/v1.0/chats/" + $chat.id + "/members"
 
-    $members = Invoke-Retry -Code {
-        Invoke-RestMethod -Method Get -Uri $membersUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
+    try {
+        $members = Invoke-Retry -Code {
+            Invoke-RestMethod -Method Get -Uri $membersUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
+        }
+    }
+    catch {
+        Write-Verbose "Failed to fetch members. Failing."
+        throw $_
     }
 
     Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to get $($members.count) members."

@@ -27,7 +27,7 @@ function Get-Image ($imageTagMatch, $imageFolderPath, $clientId, $tenantId) {
             $imageEncoded = "images/$imageFileName"
         }
         catch {
-            Write-Verbose "Unable to fetch image, returning input."
+            Write-Verbose "Failed to fetch image, returning input."
             $imageEncoded = $imageUri
         }
     }
