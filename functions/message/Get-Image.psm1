@@ -4,11 +4,11 @@ $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 $ProgressPreference = "SilentlyContinue"
 
 # probably better to save the encoded pictures to the files so duplciates don't have to recalculate
-function Get-Image ($imageTagMatch, $imageFolderPath, $clientId, $tenantId) {
+function Get-Image ($imageTagMatch, $assetsFolderPath, $clientId, $tenantId) {
     $imageUriPath = $imageTagMatch.Groups[1].Value
     $imageUriPathStream = [IO.MemoryStream]::new([byte[]][char[]]$imageUriPath)
     $imageFileName = "$((Get-FileHash -InputStream $imageUriPathStream -Algorithm SHA256).Hash).jpg"
-    $imageFilePath = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$imageFolderPath" -ChildPath "$imageFileName"
+    $imageFilePath = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$assetsFolderPath" -ChildPath "$imageFileName"
 
     if (-not(Test-Path $imageFilePath)) {
         Write-Verbose "Image cache miss, downloading."
@@ -24,7 +24,7 @@ function Get-Image ($imageTagMatch, $imageFolderPath, $clientId, $tenantId) {
 
             Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to download image."
 
-            $imageEncoded = "images/$imageFileName"
+            $imageEncoded = "assets/$imageFileName"
         }
         catch {
             Write-Verbose "Failed to fetch image, returning input."
@@ -33,7 +33,7 @@ function Get-Image ($imageTagMatch, $imageFolderPath, $clientId, $tenantId) {
     }
     else {
         Write-Verbose "Image cache hit."
-        $imageEncoded = "images/$imageFileName"
+        $imageEncoded = "assets/$imageFileName"
     }
 
     $imageEncoded

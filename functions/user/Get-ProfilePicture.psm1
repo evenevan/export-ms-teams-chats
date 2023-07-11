@@ -7,13 +7,13 @@ $defaultProfilePicture = ("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2w
 
 $attempted = @{}
 
-function Get-ProfilePicture ($userId, $imageFolderPath, $clientId, $tenantId) {
-    $profilePictureFile = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$imageFolderPath" -ChildPath "$userId.jpg"
+function Get-ProfilePicture ($userId, $assetsFolderPath, $clientId, $tenantId) {
+    $profilePictureFile = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$assetsFolderPath" -ChildPath "$userId.jpg"
 
     if (Test-Path $profilePictureFile) {
         # if available
         Write-Verbose "Profile picture cache hit."
-        "images/$userId.jpg"
+        "assets/$userId.jpg"
     }
     elseif (($null -eq $userId) -or ($attempted.ContainsKey($userId))) {
         Write-Verbose "Profile picture unavailable, using default."
@@ -38,7 +38,7 @@ function Get-ProfilePicture ($userId, $imageFolderPath, $clientId, $tenantId) {
 
             Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to download profile picture."
 
-            "images/$userId.jpg"
+            "assets/$userId.jpg"
         }
         catch {
             Write-Verbose "Failed to fetch profile picture."

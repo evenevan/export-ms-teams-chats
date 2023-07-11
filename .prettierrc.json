@@ -1,0 +1,21 @@
+{
+    "arrowParens": "always",
+    "bracketSameLine": false,
+    "bracketSpacing": true,
+    "embeddedLanguageFormatting": "auto",
+    "endOfLine": "crlf",
+    "htmlWhitespaceSensitivity": "strict",
+    "insertPragma": false,
+    "printWidth": 100,
+    "proseWrap": "always",
+    "quoteProps": "as-needed",
+    "requirePragma": false,
+    "semi": true,
+    "singleAttributePerLine": false,
+    "singleQuote": true,
+    "rangeStart": 0,
+    "rangeEnd": 2147483647,
+    "tabWidth": 4,
+    "trailingComma": "all",
+    "useTabs": false
+}

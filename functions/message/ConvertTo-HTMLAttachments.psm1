@@ -2,8 +2,7 @@
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 
-$attachmentsBlockHTML = Get-Content -Raw ./files/message/attachment/block.html
-$fileAttachmentHTML = Get-Content -Raw ./files/message/attachment/file.html
+$fileAttachmentHTMLTemplate = Get-Content -Raw ./assets/fileAttachment.html
 
 function ConvertTo-HTMLAttachments ($attachments) {
     $attachmentsHTML = ""
@@ -12,14 +11,13 @@ function ConvertTo-HTMLAttachments ($attachments) {
     $fileAttachments = $attachments | Where-Object { $_.contentType -eq "reference" }
         
     foreach ($attachment in $fileAttachments) {
-        $attachmentsHTML += $fileAttachmentHTML `
+        $attachmentsHTML += $fileAttachmentHTMLTemplate `
             -Replace "###ATTACHMENTURL###", $attachment.contentURL`
             -Replace "###ATTACHMENTNAME###", $attachment.name
     }
     
     if ($attachmentsHTML.Length -ge 0) {
-        $attachmentsBlockHTML `
-            -Replace "###ATTACHMENTS###", $attachmentsHTML
+        $attachmentsHTML
     } else {
         $null
     }

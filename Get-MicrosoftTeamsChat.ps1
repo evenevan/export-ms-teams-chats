@@ -53,17 +53,17 @@ Get-ChildItem "$PSScriptRoot/functions/util/*.psm1" | ForEach-Object { Import-Mo
 ##   HTML  ##
 ####################################
 
-$HTML = Get-Content -Raw ./files/chat.html
-$HTMLMessagesBlock_them = Get-Content -Raw ./files/message/other.html
-$HTMLMessagesBlock_me = Get-Content -Raw ./files/message/me.html
+$chatHTMLTemplate = Get-Content -Raw ./assets/chat.html
+$messageHTMLTemplate = Get-Content -Raw ./assets/message.html
 
 #Script
 $start = Get-Date
 
 Write-Host -ForegroundColor Cyan "`r`nStarting script..."
 
-$imagesFolder = Join-Path -Path $exportFolder -ChildPath "images"
-if (-not(Test-Path -Path $imagesFolder)) { New-Item -ItemType Directory -Path $imagesFolder | Out-Null }
+$assetsFolder = Join-Path -Path $exportFolder -ChildPath "assets"
+if (-not(Test-Path -Path $assetsFolder)) { New-Item -ItemType Directory -Path $assetsFolder | Out-Null }
+Copy-Item -Path "$PSScriptRoot/assets/stylesheet.css" -Destination $assetsFolder
 $exportFolder = (Resolve-Path -Path $exportFolder).ToString()
 
 $me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
@@ -87,11 +87,11 @@ foreach ($chat in $chats) {
         Write-Host "Downloading profile pictures..."
 
         foreach ($member in $members) {
-            Get-ProfilePicture $member.userId $imagesFolder $clientId $tenantId | Out-Null
+            Get-ProfilePicture $member.userId $assetsFolder $clientId $tenantId | Out-Null
         }
 
         foreach ($message in $messages) {
-            $encodedProfilePicture = Get-ProfilePicture $message.from.user.id $imagesFolder $clientId $tenantId
+            $encodedProfilePicture = Get-ProfilePicture $message.from.user.id $assetsFolder $clientId $tenantId
 
             switch ($message.messageType) {
                 "message" {
@@ -101,33 +101,33 @@ foreach ($chat in $chats) {
 
                     foreach ($imageTagMatch in $imageTagMatches) {
                         Write-Host "Downloading embedded image in message..."
-                        $encodedImage = Get-Image $imageTagMatch $imagesFolder $clientId $tenantId
-                        $messageBody = $messageBody.Replace($imageTagMatch.Groups[0], "<img src=`"$encodedImage`" style=`"width: 100%;`" >")
+                        $imagePath = Get-Image $imageTagMatch $assetsFolder $clientId $tenantId
+                        $messageBody = $messageBody.Replace($imageTagMatch.Groups[0], "<img src=`"$imagePath`" style=`"width: 100%;`" >")
                     }
         
                     $time = ConvertTo-CleanDateTime $message.createdDateTime
-        
-                    if ($message.from.user.displayName -eq $me.displayName) {
-                        $HTMLMessagesBlock = $HTMLMessagesBlock_me
-                    } 
-                    else { 
-                        $HTMLMessagesBlock = $HTMLMessagesBlock_them
-                    }
 
-                    $messagesHTML += $HTMLMessagesBlock `
+                    $messageHTML = $messageHTMLTemplate `
+                        -Replace "###ME###", "$($message.from.user.displayName -eq $me.displayName)".ToLower() `
                         -Replace "###NAME###", (Get-Initiator $message.from clientId $tenantId) `
-                        -Replace "###CONVERSATION###", $messageBody `
                         -Replace "###DATE###", $time `
+                        -Replace "###PRIORITY###", $message.importance `
+                        -Replace "###CONVERSATION###", $messageBody `
                         -Replace "###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments) `
                         -Replace "###IMAGE###", $encodedProfilePicture
+
+                    $messagesHTML += $messageHTML `
+                        
 
                     Break
                 }
                 "systemEventMessage" {
-                    $messagesHTML += $HTMLMessagesBlock_them `
+                    $messagesHTML += $messageHTMLTemplate `
+                        -Replace "###ME###", "false" `
                         -Replace "###NAME###", "System Event" `
-                        -Replace "###CONVERSATION###", (ConvertTo-SystemEventMessage $message.eventDetail $clientId $tenantId) `
                         -Replace "###DATE###", $time `
+                        -Replace "###PRIORITY###", $message.importance `
+                        -Replace "###CONVERSATION###", (ConvertTo-SystemEventMessage $message.eventDetail $clientId $tenantId) `
                         -Replace "###ATTACHMENTS###", $null `
                         -Replace "###IMAGE###", $encodedProfilePicture
 
@@ -139,7 +139,7 @@ foreach ($chat in $chats) {
             }
         }
 
-        $HTMLfile = $HTML `
+        $chatHTML = $chatHTMLTemplate `
             -Replace "###MESSAGES###", $messagesHTML`
             -Replace "###CHATNAME###", $name`
 
@@ -151,7 +151,7 @@ foreach ($chat in $chats) {
 
         $file = Join-Path -Path $exportFolder -ChildPath "$name.html"
         Write-Host -ForegroundColor Green "Exporting $file... `r`n"
-        $HTMLfile | Out-File -FilePath $file
+        $chatHTML | Out-File -FilePath $file
     }
     else {
         Write-Host ($name + " :: No messages found.")
