@@ -3,15 +3,12 @@
     data-priority="###PRIORITY###"
     data-me="###ME###"
 >
-    <img
-        class="w-10 h-10 rounded-full mt-6 shrink-0 group-data-[me=true]/message:hidden"
-        src="###IMAGE###"
-    />
+    <!-- group-data-[me=true]/message:hidden -->
+    <img class="w-10 h-10 rounded-full mt-6 shrink-0" src="###IMAGE###" />
     <div class="flex flex-col gap-1 group-data-[me=true]/message:items-end">
         <div class="flex group-data-[me=true]/message:flex-row-reverse gap-3">
-            <span class="dark:text-dark-3 text-light-3 text-sm group-data-[me=true]/message:hidden"
-                >###NAME###</span
-            >
+            <!-- group-data-[me=true]/message:hidden -->
+            <span class="dark:text-dark-3 text-light-3 text-sm">###NAME###</span>
             <span class="dark:text-dark-3 text-light-3 text-sm">###DATE###</span>
             <span
                 class="text-sm text-red-400 font-semibold group-data-[priority=urgent]/message:block hidden"
@@ -22,13 +19,9 @@
                 >IMPORTANT</span
             >
         </div>
-        <div
-            class="flex gap-2 w-fit dark:bg-dark-2 bg-light-2 rounded-lg p-2 flex-col max-w-[5/6] h-fit"
-        >
-            <div class="dark:text-dark-1 text-light-1 empty:hidden">###CONVERSATION###</div>
-            <div class="dark:text-dark-1 text-light-1 flex gap-2 flex-wrap empty:hidden"
-                >###ATTACHMENTS###</div
-            >
+        <div class="flex gap-2 w-fit dark:bg-dark-2 bg-light-2 rounded-lg p-2 flex-col h-fit">
+            <div class="empty:hidden prose dark:prose-invert">###CONVERSATION###</div>
+            <div class="flex gap-2 flex-wrap empty:hidden">###ATTACHMENTS###</div>
         </div>
     </div>
 </div>

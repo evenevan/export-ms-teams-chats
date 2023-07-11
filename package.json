@@ -1,0 +1,9 @@
+{
+    "devDependencies": {
+        "@tailwindcss/typography": "^0.5.9",
+        "tailwindcss": "^3.3.2"
+    },
+    "scripts": {
+        "tailwindcss": "tailwind -i ./assets/base.css -o ./assets/stylesheet.css"
+    }
+}

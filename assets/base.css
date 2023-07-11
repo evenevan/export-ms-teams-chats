@@ -3,25 +3,25 @@
 @tailwind utilities;
 
 .h1 {
-    @apply sm:text-5xl text-4xl font-bold
+    @apply sm:text-5xl text-4xl font-bold;
 }
 
 .h2 {
-    @apply sm:text-3xl text-2xl font-bold
+    @apply sm:text-3xl text-2xl font-bold;
 }
 
 .h3 {
-    @apply sm:text-2xl text-xl font-bold
+    @apply sm:text-2xl text-xl font-bold;
 }
 
 .h4 {
-    @apply sm:text-xl text-lg font-semibold
+    @apply sm:text-xl text-lg font-semibold;
 }
 
 .h5 {
-    @apply sm:text-lg text-base font-semibold
+    @apply sm:text-lg text-base font-semibold;
 }
 
 .h6 {
-    @apply sm:text-base text-sm font-normal
+    @apply sm:text-base text-sm font-normal;
 }

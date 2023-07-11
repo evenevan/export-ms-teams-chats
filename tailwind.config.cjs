@@ -1,11 +1,9 @@
 const colors = require('tailwindcss/colors');
 
 module.exports = {
-	content: [
-        './assets/**/*.html'
-    ],
-	theme: {
-		extend: {
+    content: ['./assets/**/*.html'],
+    theme: {
+        extend: {
             backgroundColor: {
                 'dark-1': colors.neutral['900'],
                 'dark-2': colors.neutral['800'],
@@ -55,6 +53,6 @@ module.exports = {
                 'light-tooltip': colors.white,
             },
         },
-	},
-	plugins: [],
-}
+    },
+    plugins: [require('@tailwindcss/typography')],
+};
