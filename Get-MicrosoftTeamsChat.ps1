@@ -55,6 +55,7 @@ Get-ChildItem "$PSScriptRoot/functions/util/*.psm1" | ForEach-Object { Import-Mo
 
 $chatHTMLTemplate = Get-Content -Raw ./assets/chat.html
 $messageHTMLTemplate = Get-Content -Raw ./assets/message.html
+$stylesheetCSS = Get-Content -Raw ./assets/stylesheet.css
 
 #Script
 $start = Get-Date
@@ -63,7 +64,6 @@ Write-Host -ForegroundColor Cyan "`r`nStarting script..."
 
 $assetsFolder = Join-Path -Path $exportFolder -ChildPath "assets"
 if (-not(Test-Path -Path $assetsFolder)) { New-Item -ItemType Directory -Path $assetsFolder | Out-Null }
-Copy-Item -Path "$PSScriptRoot/assets/stylesheet.css" -Destination $assetsFolder
 $exportFolder = (Resolve-Path -Path $exportFolder).ToString()
 
 $me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
@@ -142,6 +142,7 @@ foreach ($chat in $chats) {
         $chatHTML = $chatHTMLTemplate `
             -Replace "###MESSAGES###", $messagesHTML`
             -Replace "###CHATNAME###", $name`
+            -Replace "###STYLE###", $stylesheetCSS`
 
         $name = $name.Split([IO.Path]::GetInvalidFileNameChars()) -join "_"
 

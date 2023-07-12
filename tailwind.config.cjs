@@ -52,6 +52,20 @@ module.exports = {
                 'dark-tooltip': colors.white,
                 'light-tooltip': colors.white,
             },
+            typography: {
+                DEFAULT: {
+                    css: {
+                        img: {
+                            marginTop: 0,
+                            marginBottom: 0,
+                        },
+                        p: {
+                            marginTop: 0,
+                            marginBottom: 0,
+                        },
+                    },
+                },
+            },
         },
     },
     plugins: [require('@tailwindcss/typography')],

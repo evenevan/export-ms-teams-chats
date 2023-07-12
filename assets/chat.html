@@ -3,12 +3,28 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="stylesheet" href="assets/stylesheet.css" />
         <title>Exported chat: ###CHATNAME###</title>
+        <style>
+            ###STYLE###
+        </style>
     </head>
-    <body class="flex dark:bg-dark-1 bg-light-1 font-sans h-fit min-h-screen w-full justify-center">
-        <main class="max-w-5xl w-full flex flex-col gap-8 py-8 px-4">
-            <h1 class="h1 dark:text-dark-1 text-light-1 -">###CHATNAME###</h1>###MESSAGES###</main
-        >
+    <body
+        class="flex dark:bg-dark-1 bg-light-1 font-sans h-fit min-h-screen w-full justify-center prose dark:prose-invert max-w-none"
+    >
+        <div class="max-w-5xl w-full flex flex-col gap-8 py-8 px-4">
+            <h1 class="my-0">###CHATNAME###</h1>
+            <main class="flex flex-col gap-4">###MESSAGES###</main>
+            <footer class="w-full flex justify-center">
+                <span
+                    >Generated with
+                    <a
+                        href="https://github.com/Attituding/MSTeamsChatExporter"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >https://github.com/Attituding/MSTeamsChatExporter</a
+                    >.</span
+                >
+            </footer>
+        </div>
     </body>
 </html>
