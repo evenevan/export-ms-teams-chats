@@ -4,5 +4,5 @@ The repository contains a PowerShell script that allows you to export your Micro
 
 ![Example of Exported Chat](example.png)
 
-# Note
-Revamp in progress! Guide will be unavailable for the time being. Code is currently unstable.
+# Guide
+See [this gist](https://gist.github.com/Attituding/ca4e79fe3f346dc86599d9d53daa35de).
