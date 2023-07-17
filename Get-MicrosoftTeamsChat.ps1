@@ -15,16 +15,12 @@
 
     .PARAMETER tenantId
         The domain name of the UPNs for users in your tenant. E.g. contoso.com.
-    
-    .PARAMETER domain
-        The heritage tenant, Readify or Kloud.
-
 
     .EXAMPLE
-        .\Get-MicrosoftTeamChat.ps1 -ExportFolder "D:\ExportedHTML" -clientId "ClientIDforAzureADAppRegistration" -tenantId "TenantIdoftheAADOrg" -domain "contoso.com"
+        .\Get-MicrosoftTeamChat.ps1 -ExportFolder "D:\ExportedHTML" -clientId "ClientIDforAzureADAppRegistration" -tenantId "TenantIdoftheAADOrg"
 
     .NOTES
-        Author:  Trent Steenholdt
+        Original Author: Trent Steenholdt
         Pre-requisites: An app registration with delegated User.Read, Chat.Read and User.ReadBasic.All permissions is needed in the Azure AD tenant you're connecting to.
 
 #>
