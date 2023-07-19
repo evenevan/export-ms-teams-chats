@@ -14,14 +14,14 @@
         The client id of the Azure AD App Registration.
 
     .PARAMETER tenantId
-        The domain name of the UPNs for users in your tenant. E.g. contoso.com.
+        The tenant id. See https://learn.microsoft.com/en-us/azure/active-directory/develop/v2-protocols-oidc#find-your-apps-openid-configuration-document-uri for possible tenants.
 
     .EXAMPLE
-        .\Get-MicrosoftTeamChat.ps1 -ExportFolder "D:\ExportedHTML" -clientId "ClientIDforAzureADAppRegistration" -tenantId "TenantIdoftheAADOrg"
+        .\Get-MicrosoftTeamChat.ps1 -ExportFolder "D:\ExportedHTML" -clientId "31359c7f-bd7e-475c-86db-fdb8c937548e" -tenantId "contoso.onmicrosoft.com"
 
     .NOTES
         Original Author: Trent Steenholdt
-        Pre-requisites: An app registration with delegated User.Read, Chat.Read and User.ReadBasic.All permissions is needed in the Azure AD tenant you're connecting to.
+        Pre-requisites: An app registration with delegated User.Read, Chat.Read and User.ReadBasic. All permissions is needed in the Azure AD tenant you're connecting to.
 
 #>
 

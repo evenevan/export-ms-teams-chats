@@ -5,8 +5,8 @@
 >
     <!-- group-data-[me=true]/message:hidden -->
     <img class="w-10 h-10 rounded-full mt-6 shrink-0" src="###IMAGE###" />
-    <div class="flex flex-col gap-1 group-data-[me=true]/message:items-end">
-        <div class="flex group-data-[me=true]/message:flex-row-reverse gap-3">
+    <div class="flex flex-col gap-1 group-data-[me=true]/message:items-end overflow-x-auto min-w-0">
+        <div class="flex group-data-[me=true]/message:flex-row-reverse gap-3 overflow-x-auto">
             <!-- group-data-[me=true]/message:hidden -->
             <span class="dark:text-dark-3 text-light-3 text-sm">###NAME###</span>
             <span class="dark:text-dark-3 text-light-3 text-sm">###DATE###</span>
@@ -20,9 +20,9 @@
             >
         </div>
         <div
-            class="flex gap-2 w-fit dark:bg-dark-2 bg-light-2 rounded-lg p-2 flex-col h-fit prose dark:prose-invert"
+            class="flex gap-2 w-fit max-w-full dark:bg-dark-2 bg-light-2 rounded-lg p-2 flex-col h-fit prose dark:prose-invert overflow-x-auto"
         >
-            <div class="empty:hidden">###CONVERSATION###</div>
+            <div class="empty:hidden break-words">###CONVERSATION###</div>
             <div class="flex gap-2 flex-wrap empty:hidden">###ATTACHMENTS###</div>
         </div>
     </div>
