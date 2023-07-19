@@ -3,7 +3,7 @@ Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 $ProgressPreference = "SilentlyContinue"
 
-$resourceScores = "Chat.Read User.Read User.ReadBasic.All offline_access"
+$resourceScores = "Chat.Read User.Read offline_access"
 # https://learn.microsoft.com/EN-US/azure/active-directory/develop/scopes-oidc#openid
 $openIdScopes = "offline_access openid"
 
