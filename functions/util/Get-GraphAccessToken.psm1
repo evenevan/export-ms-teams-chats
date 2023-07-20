@@ -3,11 +3,11 @@ Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 $ProgressPreference = "SilentlyContinue"
 
-$resourceScores = "Chat.Read User.Read offline_access"
+# $resourceScores = "Chat.Read User.Read offline_access"
 # https://learn.microsoft.com/EN-US/azure/active-directory/develop/scopes-oidc#openid
-$openIdScopes = "offline_access openid"
+# $openIdScopes = "offline_access openid"
 
-$scopes = $null
+$scopes = "Chat.Read User.Read offline_access"
 $accessToken = $null
 $refreshToken = $null
 $expires = $null
@@ -21,6 +21,7 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
     if ([string]::IsNullOrEmpty($refreshToken)) {
         Write-Verbose "No access token, getting token."
         
+        <#
         if ($clientId -eq "31359c7f-bd7e-475c-86db-fdb8c937548e") {
             # openid scopes and authentiation
             $script:scopes = $openIdScopes
@@ -38,8 +39,14 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
                 scope     = $resourceScores
             }
         }
+        #>
 
-        $deviceCodeRequest = Invoke-RestMethod -Method POST -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/devicecode" -ContentType $contentType -Body $codeBody
+        $codeBody = @{ 
+            client_id = $clientId
+            scope     = $scopes
+        }
+
+        $deviceCodeRequest = Invoke-RestMethod -Method POST -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/devicecode" <# -ContentType $contentType #> -Body $codeBody
         Write-Host "`n$($deviceCodeRequest.message)"
 
         $interval = $deviceCodeRequest.interval
