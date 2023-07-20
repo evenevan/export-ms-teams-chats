@@ -3,7 +3,6 @@ Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 $ProgressPreference = "SilentlyContinue"
 
-# probably better to save the encoded pictures to the files so duplciates don't have to recalculate
 function Get-Image ($imageTagMatch, $assetsFolderPath, $clientId, $tenantId) {
     $imageUriPath = $imageTagMatch.Groups[1].Value
     $imageUriPathStream = [IO.MemoryStream]::new([byte[]][char[]]$imageUriPath)
@@ -24,17 +23,17 @@ function Get-Image ($imageTagMatch, $assetsFolderPath, $clientId, $tenantId) {
 
             Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to download image."
 
-            $imageEncoded = "assets/$imageFileName"
+            $image = "assets/$imageFileName"
         }
         catch {
             Write-Verbose "Failed to fetch image, returning input."
-            $imageEncoded = $imageUri
+            $image = $imageUri
         }
     }
     else {
         Write-Verbose "Image cache hit."
-        $imageEncoded = "assets/$imageFileName"
+        $image = "assets/$imageFileName"
     }
 
-    $imageEncoded
+    $image
 }

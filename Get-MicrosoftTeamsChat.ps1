@@ -68,7 +68,12 @@ Write-Host ("Getting all chats, please wait... This may take some time.")
 $chats = Get-Chats $clientId $tenantId
 Write-Host ("" + $chats.count + " possible chat chats found.")
 
+$chatIndex = 0
+
 foreach ($chat in $chats) {
+    Write-Progress -Activity "Exporting Chats" -Status "Chat $($chatIndex) of $($chats.count)" -PercentComplete $(($chatIndex / $chats.count) * 100)
+    $chatIndex += 1
+
     $members = Get-Members $chat $clientId $tenantId
     $name = ConvertTo-ChatName $chat $members $me $clientId $tenantId
     $messages = Get-Messages $chat $clientId $tenantId
@@ -87,7 +92,7 @@ foreach ($chat in $chats) {
         }
 
         foreach ($message in $messages) {
-            $encodedProfilePicture = Get-ProfilePicture $message.from.user.id $assetsFolder $clientId $tenantId
+            $profilePicture = Get-ProfilePicture $message.from.user.id $assetsFolder $clientId $tenantId
 
             switch ($message.messageType) {
                 "message" {
@@ -104,28 +109,31 @@ foreach ($chat in $chats) {
                     $time = ConvertTo-CleanDateTime $message.createdDateTime
 
                     $messageHTML = $messageHTMLTemplate `
+                        -Replace "###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments) `
+                        -Replace "###CONVERSATION###", $messageBody `
+                        -Replace "###DATE###", $time `
+                        -Replace "###DELETED###", "$($null -ne $message.deletedDateTime)".ToLower() `
+                        -Replace "###EDITED###", "$($null -ne $message.lastEditedDateTime)".ToLower() `
+                        -Replace "###IMAGE###", $profilePicture `
                         -Replace "###ME###", "$($message.from.user.displayName -eq $me.displayName)".ToLower() `
                         -Replace "###NAME###", (Get-Initiator $message.from clientId $tenantId) `
-                        -Replace "###DATE###", $time `
-                        -Replace "###PRIORITY###", $message.importance `
-                        -Replace "###CONVERSATION###", $messageBody `
-                        -Replace "###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments) `
-                        -Replace "###IMAGE###", $encodedProfilePicture
+                        -Replace "###PRIORITY###", $message.importance
 
                     $messagesHTML += $messageHTML `
                         
-
                     Break
                 }
                 "systemEventMessage" {
                     $messagesHTML += $messageHTMLTemplate `
+                        -Replace "###ATTACHMENTS###", $null `
+                        -Replace "###CONVERSATION###", (ConvertTo-SystemEventMessage $message.eventDetail $clientId $tenantId) `
+                        -Replace "###DATE###", $time `
+                        -Replace "###DELETED###", $null `
+                        -Replace "###EDITED###", $null `
+                        -Replace "###IMAGE###", $profilePicture `
                         -Replace "###ME###", "false" `
                         -Replace "###NAME###", "System Event" `
-                        -Replace "###DATE###", $time `
-                        -Replace "###PRIORITY###", $message.importance `
-                        -Replace "###CONVERSATION###", (ConvertTo-SystemEventMessage $message.eventDetail $clientId $tenantId) `
-                        -Replace "###ATTACHMENTS###", $null `
-                        -Replace "###IMAGE###", $encodedProfilePicture
+                        -Replace "###PRIORITY###", $message.importance
 
                     Break
                 }
@@ -147,6 +155,7 @@ foreach ($chat in $chats) {
         }
 
         $file = Join-Path -Path $exportFolder -ChildPath "$name.html"
+        if (Test-Path $file) { $file = ($file -Replace ".html", ( " ($chatIndex).html")) }
         Write-Host -ForegroundColor Green "Exporting $file... `r`n"
         $chatHTML | Out-File -FilePath $file
     }

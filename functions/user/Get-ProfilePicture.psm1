@@ -24,7 +24,7 @@ function Get-ProfilePicture ($userId, $assetsFolderPath, $clientId, $tenantId) {
     else {
         # if never attempted
         
-        Write-Verbose "Profile picture cache miss."
+        Write-Verbose "Profile picture cache miss, fetching."
 
         $attempted.Add($userId, $null)
         $profilePhotoUri = "https://graph.microsoft.com/v1.0/users/" + $userId + "/photo/`$value"

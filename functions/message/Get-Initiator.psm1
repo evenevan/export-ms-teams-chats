@@ -2,24 +2,19 @@
 Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 
+# used to get the initator of an event
+
 function Get-Initiator ($identitySet, $clientId, $tenantId) {
     if ($identitySet.user) {
         if ($identitySet.user.displayName) {
             $identitySet.user.displayName
         }
         else {
-            try {
-                $user = Get-User $identitySet.user.id $clientId $tenantId
-                $user.displayName
-            }
-            catch {
-                Write-Verbose "Failed to get initiator username."
-                "Unknown (Failed to fetch)"
-            }
+            Get-DisplayName $identitySet.user.id $clientId $tenantId
         }
     }
     elseif ($identitySet.application) {
-        if ($identitySet.application.displayName) {
+        if ($null -ne $identitySet.application.displayName) {
             $identitySet.application.displayName
         }
         else {

@@ -1180,12 +1180,28 @@ video {
   flex-direction: row-reverse;
 }
 
+.group\/message[data-deleted=true] .group-data-\[deleted\=true\]\/message\:block {
+  display: block;
+}
+
+.group\/message[data-edited=true] .group-data-\[edited\=true\]\/message\:block {
+  display: block;
+}
+
 .group\/message[data-priority=high] .group-data-\[priority\=high\]\/message\:block {
   display: block;
 }
 
 .group\/message[data-priority=urgent] .group-data-\[priority\=urgent\]\/message\:block {
   display: block;
+}
+
+.group\/message[data-updated=true] .group-data-\[updated\=true\]\/message\:block {
+  display: block;
+}
+
+.group\/message[data-deleted=true] .group-data-\[deleted\=true\]\/message\:hidden {
+  display: none;
 }
 
 .group\/message[data-me=true] .group-data-\[me\=true\]\/message\:hidden {

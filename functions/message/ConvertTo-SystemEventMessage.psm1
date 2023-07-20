@@ -17,24 +17,20 @@ function ConvertTo-SystemEventMessage ($eventDetail, $clientId, $tenantId) {
             Break
         }
         "#microsoft.graph.membersAddedEventMessageDetail" {
-            $users = ConvertTo-Users $eventDetail.members $clientId, $tenantId
-
-            "$(Get-Initiator $eventDetail.initiator $clientId, $tenantId) added $(($users | Select-Object -ExpandProperty "displayName") -join ", ")."
+            "$(Get-Initiator $eventDetail.initiator $clientId, $tenantId) added $(($eventDetail.members | ForEach-Object { Get-DisplayName $_.id $clientId $tenantId }) -join ", ")."
 
             Break
         }
         "#microsoft.graph.membersDeletedEventMessageDetail" {
-            $users = ConvertTo-Users $eventDetail.members $clientId, $tenantId
-
             if (
-                ($users.count -eq 1) -and
+                ($eventDetail.members.count -eq 1) -and
                 ($null -ne $eventDetail.initiator.user) -and
-                ($eventDetail.initiator.user.id -eq $users[0].id)
+                ($eventDetail.initiator.user.id -eq $eventDetail.members[0].id)
             ) {
-                "$($users[0].displayName) left."
+                "$(Get-DisplayName $eventDetail.members[0].id $clientId $tenantId) left."
             }
             else {
-                "$(Get-Initiator $eventDetail.initiator $clientId, $tenantId) removed $(($users | Select-Object -ExpandProperty "displayName") -join ", ")."
+                "$(Get-Initiator $eventDetail.initiator $clientId, $tenantId) removed $(($eventDetail.members | ForEach-Object { Get-DisplayName $_.id $clientId $tenantId }) -join ", ")."
             }
             
             Break
@@ -55,20 +51,6 @@ function ConvertTo-SystemEventMessage ($eventDetail, $clientId, $tenantId) {
         Default {
             Write-Warning "Unhandled system event type: $($eventDetail."@odata.type")"
             "Unhandled system event type $($eventDetail."@odata.type"): $($eventDetail | ConvertTo-Json -Depth 5)"
-        }
-    }
-}
-
-function ConvertTo-Users ($members, $clientId, $tenantId) {
-    $eventDetail.members | Select-Object -ExpandProperty "id" | Select-Object -Unique | Sort-Object | ForEach-Object {
-        $id = $_
-
-        try {
-            Get-User $id $clientId $tenantId
-        }
-        catch {
-            Write-Verbose "Failed to fetch members."
-            $id
         }
     }
 }
