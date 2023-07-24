@@ -8,7 +8,7 @@ $defaultProfilePicture = ("data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2w
 $attempted = @{}
 
 function Get-ProfilePicture ($userId, $assetsFolderPath, $clientId, $tenantId) {
-    $profilePictureFile = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$assetsFolderPath" -ChildPath "$userId.jpg"
+    $profilePictureFile = Join-Path -Path "$assetsFolderPath" -ChildPath "$userId.jpg"
 
     if (Test-Path $profilePictureFile) {
         # if available

@@ -7,7 +7,7 @@ function Get-Image ($imageTagMatch, $assetsFolderPath, $clientId, $tenantId) {
     $imageUriPath = $imageTagMatch.Groups[1].Value
     $imageUriPathStream = [IO.MemoryStream]::new([byte[]][char[]]$imageUriPath)
     $imageFileName = "$((Get-FileHash -InputStream $imageUriPathStream -Algorithm SHA256).Hash).jpg"
-    $imageFilePath = Join-Path -Path "$($MyInvocation.PSScriptRoot)/$assetsFolderPath" -ChildPath "$imageFileName"
+    $imageFilePath = Join-Path -Path "$assetsFolderPath" -ChildPath "$imageFileName"
 
     if (-not(Test-Path $imageFilePath)) {
         Write-Verbose "Image cache miss, downloading."
