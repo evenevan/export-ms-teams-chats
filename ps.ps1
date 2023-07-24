@@ -19,7 +19,12 @@ $out = "$(Get-Location)/out"
 
 Write-Host "Your chats will be exported to $out"
 
-pwsh.exe -File "$extractedPath/$innerFolderName/Get-MicrosoftTeamsChat.ps1" -exportFolder $out
+if ($IsMacOS -or $IsLinux) {
+    pwsh -File "$extractedPath/$innerFolderName/Get-MicrosoftTeamsChat.ps1" -exportFolder $out
+
+} else {
+    pwsh.exe -File "$extractedPath/$innerFolderName/Get-MicrosoftTeamsChat.ps1" -exportFolder $out
+}
 
 Remove-Item -LiteralPath $zipPath -Recurse
 Remove-Item -LiteralPath $extractedPath -Recurse
