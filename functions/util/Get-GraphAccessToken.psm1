@@ -57,7 +57,6 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
             device_code = $deviceCodeRequest.device_code
             client_info = 1
             client_id   = $clientId
-          
         }
     }
     else {
