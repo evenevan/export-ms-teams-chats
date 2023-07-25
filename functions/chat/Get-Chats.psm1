@@ -5,14 +5,16 @@ $ProgressPreference = "SilentlyContinue"
 
 function Get-Chats ($clientId, $tenantId) {
     $link = "https://graph.microsoft.com/v1.0/me/chats"
-    $chats = @();
+    $chats = @()
 
     $start = Get-Date
 
     try {
         while ($null -ne $link) {
             $chatsToAdd = Invoke-Retry -Code {
-                Invoke-RestMethod -Method Get -Uri $link -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
+                Invoke-RestMethod -Method Get -Uri $link -Headers @{
+                    "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
+                }
             }
             
             $chats += $chatsToAdd.value

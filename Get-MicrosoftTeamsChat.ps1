@@ -1,4 +1,4 @@
-#Requires -Version 7.0
+#Requires -Version 5.1
 <#
 
     .SYNOPSIS
@@ -62,7 +62,9 @@ $assetsFolder = Join-Path -Path $exportFolder -ChildPath "assets"
 if (-not(Test-Path -Path $assetsFolder)) { New-Item -ItemType Directory -Path $assetsFolder | Out-Null }
 $exportFolder = (Resolve-Path -Path $exportFolder).ToString()
 
-$me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
+$me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -Headers @{
+    "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
+}
 
 Write-Host ("Getting all chats, please wait... This may take some time.")
 $chats = Get-Chats $clientId $tenantId

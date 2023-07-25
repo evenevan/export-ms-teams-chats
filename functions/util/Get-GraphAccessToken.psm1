@@ -88,7 +88,9 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
         } 
     }
     
-    $script:accessToken = ConvertTo-SecureString $authRequest.access_token -AsPlainText -Force
+    # $script:accessToken = ConvertTo-SecureString $authRequest.access_token -AsPlainText -Force
+    # secure string doesn't seems necessary in this context, lmk if i'm wrong about this
+    $script:accessToken = $authRequest.access_token
     $script:refreshToken = $authRequest.refresh_token
     $script:expires = (Get-Date).AddSeconds($authRequest.expires_in)
 

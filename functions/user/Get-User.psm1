@@ -9,7 +9,8 @@ function Get-User ($userId, $clientId, $tenantId) {
     if ($users.ContainsKey($userId)) {
         Write-Verbose "User cache hit."
         $users[$userId]
-    } else {
+    }
+    else {
         Write-Verbose "User cache miss, fetching."
 
         $start = Get-Date
@@ -17,7 +18,9 @@ function Get-User ($userId, $clientId, $tenantId) {
         $userUri = "https://graph.microsoft.com/v1.0/users/" + $userId
     
         $user = Invoke-Retry -Code {
-            Invoke-RestMethod -Method Get -Uri $userUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
+            Invoke-RestMethod -Method Get -Uri $userUri -Headers @{
+                "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
+            }
         }
     
         Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to get user."

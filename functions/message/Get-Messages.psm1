@@ -13,7 +13,10 @@ function Get-Messages ($chat, $clientId, $tenantId) {
     try {
         while ($null -ne $link) {
             $messagesToAdd = Invoke-Retry -Code { 
-                Invoke-RestMethod -Method Get -Uri $link -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -Headers @{ "Prefer" = "include-unknown-enum-members" }
+                Invoke-RestMethod -Method Get -Uri $link -Headers @{
+                    "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
+                    "Prefer"        = "include-unknown-enum-members"
+                }
             }
             
             $messages += $messagesToAdd.value

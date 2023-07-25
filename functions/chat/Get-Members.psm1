@@ -10,7 +10,9 @@ function Get-Members ($chat, $clientId, $tenantId) {
 
     try {
         $members = Invoke-Retry -Code {
-            Invoke-RestMethod -Method Get -Uri $membersUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId)
+            Invoke-RestMethod -Method Get -Uri $membersUri -Headers @{
+                "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
+            }
         }
     }
     catch {

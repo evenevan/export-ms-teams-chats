@@ -33,7 +33,9 @@ function Get-ProfilePicture ($userId, $assetsFolderPath, $clientId, $tenantId) {
             $start = Get-Date
 
             Invoke-Retry -Code {
-                Invoke-WebRequest -Uri $profilePhotoUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -OutFile $profilePictureFile
+                Invoke-WebRequest -Uri $profilePhotoUri -Headers @{
+                    "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
+                } -OutFile $profilePictureFile
             }
 
             Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to download profile picture."

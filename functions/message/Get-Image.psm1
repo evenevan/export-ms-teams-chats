@@ -18,7 +18,9 @@ function Get-Image ($imageTagMatch, $assetsFolderPath, $clientId, $tenantId) {
             $start = Get-Date
 
             Invoke-Retry -Code {
-                Invoke-WebRequest -Uri $imageUri -Authentication OAuth -Token (Get-GraphAccessToken $clientId $tenantId) -OutFile $imageFilePath
+                Invoke-WebRequest -Uri $imageUri -Headers @{
+                    "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
+                } -OutFile $imageFilePath
             }
 
             Write-Verbose "Took $(((Get-Date) - $start).TotalSeconds)s to download image."
