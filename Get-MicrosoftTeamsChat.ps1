@@ -56,11 +56,13 @@ $stylesheetCSS = Get-Content -Raw ./assets/stylesheet.css
 #Script
 $start = Get-Date
 
-Write-Host -ForegroundColor Cyan "`r`nStarting script..."
+Write-Host -ForegroundColor Cyan "Starting script..."
 
 $assetsFolder = Join-Path -Path $exportFolder -ChildPath "assets"
 if (-not(Test-Path -Path $assetsFolder)) { New-Item -ItemType Directory -Path $assetsFolder | Out-Null }
 $exportFolder = (Resolve-Path -Path $exportFolder).ToString()
+
+Write-Host "Your chats will be exported to $exportFolder"
 
 $me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -Headers @{
     "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"

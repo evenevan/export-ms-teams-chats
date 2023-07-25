@@ -3,6 +3,7 @@ Param([bool]$verbose)
 $VerbosePreference = if ($verbose) { 'Continue' } else { 'SilentlyContinue' }
 
 function ConvertTo-SystemEventMessage ($eventDetail, $clientId, $tenantId) {
+    # https://learn.microsoft.com/en-us/graph/system-messages#supported-system-message-events
     switch ($eventDetail."@odata.type") {
         "#microsoft.graph.callEndedEventMessageDetail" {
             "Call ended after $($eventDetail.callDuration)."

@@ -14,10 +14,6 @@ $expires = $null
 $interval = $null
 
 function Get-GraphAccessToken ($clientId, $tenantId) {
-    if ($expires -ge ((Get-Date) + 600)) {
-        return $accessToken
-    }
-
     if ([string]::IsNullOrEmpty($refreshToken)) {
         Write-Verbose "No access token, getting token."
         
@@ -47,17 +43,18 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
         }
 
         $deviceCodeRequest = Invoke-RestMethod -Method POST -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/devicecode" <# -ContentType $contentType #> -Body $codeBody
-        Write-Host "`n$($deviceCodeRequest.message)"
+        Write-Host $deviceCodeRequest.message
 
         $interval = $deviceCodeRequest.interval
 
         $tokenBody = @{
             grant_type  = "urn:ietf:params:oauth:grant-type:device_code"
-            code        = $deviceCodeRequest.device_code
             device_code = $deviceCodeRequest.device_code
-            client_info = 1
             client_id   = $clientId
         }
+    }
+    elseif ($expires -ge ((Get-Date) + 600)) {
+        return $accessToken
     }
     else {
         Write-Verbose "Access token expired, getting new token."
