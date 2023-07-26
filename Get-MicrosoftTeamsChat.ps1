@@ -62,7 +62,7 @@ $assetsFolder = Join-Path -Path $exportFolder -ChildPath "assets"
 if (-not(Test-Path -Path $assetsFolder)) { New-Item -ItemType Directory -Path $assetsFolder | Out-Null }
 $exportFolder = (Resolve-Path -Path $exportFolder).ToString()
 
-Write-Host "Your chats will be exported to $exportFolder"
+Write-Host "Your chats will be exported to $exportFolder."
 
 $me = Invoke-RestMethod -Method Get -Uri "https://graph.microsoft.com/v1.0/me" -Headers @{
     "Authorization" = "Bearer $(Get-GraphAccessToken $clientId $tenantId)"
@@ -86,7 +86,7 @@ foreach ($chat in $chats) {
 
     if (($messages.count -gt 0) -and (-not([string]::isNullorEmpty($name)))) {
 
-        Write-Host -ForegroundColor White ($name + " :: " + $messages.count + " messages.")
+        Write-Host -ForegroundColor White ("`r`n$name :: $($messages.count) messages.")
 
         # download profile pictures for use later
         Write-Host "Downloading profile pictures..."
@@ -95,8 +95,11 @@ foreach ($chat in $chats) {
             Get-ProfilePicture $member.userId $assetsFolder $clientId $tenantId | Out-Null
         }
 
+        Write-Host "Processing messages..."
+
         foreach ($message in $messages) {
             $profilePicture = Get-ProfilePicture $message.from.user.id $assetsFolder $clientId $tenantId
+            $time = ConvertTo-CleanDateTime $message.createdDateTime
 
             switch ($message.messageType) {
                 "message" {
@@ -105,13 +108,11 @@ foreach ($chat in $chats) {
                     $imageTagMatches = [Regex]::Matches($messageBody, "<img.+?src=[\`"']https:\/\/graph.microsoft.com(.+?)[\`"'].*?>")
 
                     foreach ($imageTagMatch in $imageTagMatches) {
-                        Write-Host "Downloading embedded image in message..."
+                        Write-Verbose "Downloading embedded image in message..."
                         $imagePath = Get-Image $imageTagMatch $assetsFolder $clientId $tenantId
                         $messageBody = $messageBody.Replace($imageTagMatch.Groups[0], "<img src=`"$imagePath`" style=`"width: 100%;`" >")
                     }
         
-                    $time = ConvertTo-CleanDateTime $message.createdDateTime
-
                     $messageHTML = $messageHTMLTemplate `
                         -Replace "###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments) `
                         -Replace "###CONVERSATION###", $messageBody `
@@ -159,13 +160,20 @@ foreach ($chat in $chats) {
         }
 
         $file = Join-Path -Path $exportFolder -ChildPath "$name.html"
-        if (Test-Path $file) { $file = ($file -Replace ".html", ( " ($chatIndex).html")) }
-        Write-Host -ForegroundColor Green "Exporting $file... `r`n"
+
+        if ($chat.chatType -ne "oneOnOne") {
+            # add hash of chatId in case multiple chats have the same name or members
+            $chatIdStream = [IO.MemoryStream]::new([byte[]][char[]]$chat.id)
+            $chatIdShortHash = (Get-FileHash -InputStream $chatIdStream -Algorithm SHA256).Hash.Substring(0,8)
+            $file = ($file -Replace ".html", ( " ($chatIdShortHash).html"))
+        }
+
+        Write-Host -ForegroundColor Green "Exporting $file..."
         $chatHTML | Out-File -FilePath $file
     }
     else {
         Write-Host ($name + " :: No messages found.")
-        Write-Host -ForegroundColor Yellow "Skipping...`r`n"
+        Write-Host -ForegroundColor Yellow "Skipping..."
     }
 }
 
