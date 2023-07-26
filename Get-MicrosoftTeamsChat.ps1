@@ -172,7 +172,7 @@ foreach ($chat in $chats) {
         $chatHTML | Out-File -FilePath $file
     }
     else {
-        Write-Host ($name + " :: No messages found.")
+        Write-Host ("`r`n$name :: No messages found.")
         Write-Host -ForegroundColor Yellow "Skipping..."
     }
 }
