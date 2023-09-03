@@ -169,7 +169,7 @@ foreach ($chat in $chats) {
         }
 
         Write-Host -ForegroundColor Green "Exporting $file..."
-        $chatHTML | Out-File -FilePath $file
+        $chatHTML | Out-File -LiteralPath $file
     }
     else {
         Write-Host ("`r`n$name :: No messages found.")
