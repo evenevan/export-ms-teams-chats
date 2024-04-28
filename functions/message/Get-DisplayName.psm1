@@ -13,11 +13,11 @@ function Get-DisplayName ($userId, $clientId, $tenantId) {
         }
         else {
             Write-Verbose "Fetched user's displayName is null."
-            "Unknown"
+            "Unknown ($userId)"
         }
     }
     catch {
         Write-Verbose "Failed to fetch a user's displayName."
-        "Unknown"
+        "Unknown ($userId)"
     }
 }
