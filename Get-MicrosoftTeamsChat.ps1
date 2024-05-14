@@ -28,6 +28,7 @@
 [cmdletbinding()]
 Param(
     [Parameter(Mandatory = $false, HelpMessage = "Export location of where the HTML files will be saved.")] [string] $exportFolder = "out",
+    [Parameter(Mandatory = $false, HelpMessage = "If specified, only group chats this string (exact match) will be exported")] [string[]] $toExport = $null,
     [Parameter(Mandatory = $false, HelpMessage = "The client id of the Azure AD App Registration")] [string] $clientId = "31359c7f-bd7e-475c-86db-fdb8c937548e",
     [Parameter(Mandatory = $false, HelpMessage = "The tenant id of the Azure AD environment the user logs into")] [string] $tenantId = "common"
 )
@@ -80,6 +81,12 @@ foreach ($chat in $chats) {
 
     $members = Get-Members $chat $clientId $tenantId
     $name = ConvertTo-ChatName $chat $members $me $clientId $tenantId
+    
+    if ($null -ne $toExport -and $toExport -notcontains $name) {
+        Write-Verbose ("$name is not in chats to export ($($toExport -join ", ")), skipping...")
+        continue
+    }
+
     $messages = Get-Messages $chat $clientId $tenantId
 
     $messagesHTML = $null
