@@ -74,6 +74,7 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
             Invoke-RestMethod -Method POST -Uri "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token" -Body $tokenBody
         }
         catch {
+            Write-Verbose ($_ | Out-String)
             $errorMessage = $_.ErrorDetails.Message | ConvertFrom-Json
   
             # If not waiting for auth, throw error
@@ -82,7 +83,7 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
             }
 
             Start-Sleep $interval
-        } 
+        }
     }
     
     # $script:accessToken = ConvertTo-SecureString $authRequest.access_token -AsPlainText -Force
