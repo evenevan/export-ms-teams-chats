@@ -75,6 +75,7 @@ function Get-GraphAccessToken ($clientId, $tenantId) {
         }
         catch {
             Write-Verbose ($_ | Out-String)
+            Write-Verbose $_.ErrorDetails.Message
             $errorMessage = $_.ErrorDetails.Message | ConvertFrom-Json
   
             # If not waiting for auth, throw error
