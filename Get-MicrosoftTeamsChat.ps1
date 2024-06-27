@@ -120,32 +120,34 @@ foreach ($chat in $chats) {
                         $messageBody = $messageBody.Replace($imageTagMatch.Groups[0], "<img src=`"$imagePath`" style=`"width: 100%;`" >")
                     }
         
-                    $messageHTML = $messageHTMLTemplate `
-                        -Replace "###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments) `
-                        -Replace "###CONVERSATION###", $messageBody `
-                        -Replace "###DATE###", $time `
-                        -Replace "###DELETED###", "$($null -ne $message.deletedDateTime)".ToLower() `
-                        -Replace "###EDITED###", "$($null -ne $message.lastEditedDateTime)".ToLower() `
-                        -Replace "###IMAGE###", $profilePicture `
-                        -Replace "###ME###", "$($message.from.user.displayName -eq $me.displayName)".ToLower() `
-                        -Replace "###NAME###", (Get-Initiator $message.from clientId $tenantId) `
-                        -Replace "###PRIORITY###", $message.importance
+                    $messageHTML = $messageHTMLTemplate
+                    $messageHTML = $messageHTML.Replace("###ATTACHMENTS###", (ConvertTo-HTMLAttachments $message.attachments))
+                    $messageHTML = $messageHTML.Replace("###CONVERSATION###", $messageBody)
+                    $messageHTML = $messageHTML.Replace("###DATE###", $time)
+                    $messageHTML = $messageHTML.Replace("###DELETED###", "$($null -ne $message.deletedDateTime)".ToLower())
+                    $messageHTML = $messageHTML.Replace("###EDITED###", "$($null -ne $message.lastEditedDateTime)".ToLower())
+                    $messageHTML = $messageHTML.Replace("###IMAGE###", $profilePicture)
+                    $messageHTML = $messageHTML.Replace("###ME###", "$($message.from.user.displayName -eq $me.displayName)".ToLower())
+                    $messageHTML = $messageHTML.Replace("###NAME###", (Get-Initiator $message.from clientId $tenantId))
+                    $messageHTML = $messageHTML.Replace("###PRIORITY###", $message.importance)
 
-                    $messagesHTML += $messageHTML `
+                    $messagesHTML += $messageHTML
                         
                     Break
                 }
                 "systemEventMessage" {
-                    $messagesHTML += $messageHTMLTemplate `
-                        -Replace "###ATTACHMENTS###", $null `
-                        -Replace "###CONVERSATION###", (ConvertTo-SystemEventMessage $message.eventDetail $clientId $tenantId) `
-                        -Replace "###DATE###", $time `
-                        -Replace "###DELETED###", $null `
-                        -Replace "###EDITED###", $null `
-                        -Replace "###IMAGE###", $profilePicture `
-                        -Replace "###ME###", "false" `
-                        -Replace "###NAME###", "System Event" `
-                        -Replace "###PRIORITY###", $message.importance
+                    $messageHTML = $messageHTMLTemplate
+                    $messageHTML = $messageHTML.Replace("###ATTACHMENTS###", $null)
+                    $messageHTML = $messageHTML.Replace("###CONVERSATION###", (ConvertTo-SystemEventMessage $message.eventDetail $clientId $tenantId))
+                    $messageHTML = $messageHTML.Replace("###DATE###", $time)
+                    $messageHTML = $messageHTML.Replace("###DELETED###", $null)
+                    $messageHTML = $messageHTML.Replace("###EDITED###", $null)
+                    $messageHTML = $messageHTML.Replace("###IMAGE###", $profilePicture)
+                    $messageHTML = $messageHTML.Replace("###ME###", "false")
+                    $messageHTML = $messageHTML.Replace("###NAME###", "System Event")
+                    $messageHTML = $messageHTML.Replace("###PRIORITY###", $message.importance)
+
+                    $messagesHTML += $messageHTML
 
                     Break
                 }
@@ -155,10 +157,10 @@ foreach ($chat in $chats) {
             }
         }
 
-        $chatHTML = $chatHTMLTemplate `
-            -Replace "###MESSAGES###", $messagesHTML`
-            -Replace "###CHATNAME###", $name`
-            -Replace "###STYLE###", $stylesheetCSS`
+        $chatHTML = $chatHTMLTemplate
+        $chatHTML = $chatHTML.Replace("###MESSAGES###", $messagesHTML)
+        $chatHTML = $chatHTML.Replace("###CHATNAME###", $name)
+        $chatHTML = $chatHTML.Replace("###STYLE###", $stylesheetCSS)
 
         $name = $name.Split([IO.Path]::GetInvalidFileNameChars()) -join "_"
 
@@ -172,7 +174,7 @@ foreach ($chat in $chats) {
             # add hash of chatId in case multiple chats have the same name or members
             $chatIdStream = [IO.MemoryStream]::new([byte[]][char[]]$chat.id)
             $chatIdShortHash = (Get-FileHash -InputStream $chatIdStream -Algorithm SHA256).Hash.Substring(0,8)
-            $file = ($file -Replace ".html", ( " ($chatIdShortHash).html"))
+            $file = $file.Replace(".html", ( " ($chatIdShortHash).html"))
         }
 
         Write-Host -ForegroundColor Green "Exporting $file..."

@@ -11,9 +11,7 @@ function ConvertTo-HTMLAttachments ($attachments) {
     $fileAttachments = $attachments | Where-Object { $_.contentType -eq "reference" }
         
     foreach ($attachment in $fileAttachments) {
-        $attachmentsHTML += $fileAttachmentHTMLTemplate `
-            -Replace "###ATTACHMENTURL###", $attachment.contentURL`
-            -Replace "###ATTACHMENTNAME###", $attachment.name
+        $attachmentsHTML += $fileAttachmentHTMLTemplate.Replace("###ATTACHMENTURL###", $attachment.contentURL).Replace("###ATTACHMENTNAME###", $attachment.name)
     }
     
     if ($attachmentsHTML.Length -ge 0) {
