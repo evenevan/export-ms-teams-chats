@@ -7,7 +7,7 @@ $ProgressPreference = "SilentlyContinue"
 # https://learn.microsoft.com/EN-US/azure/active-directory/develop/scopes-oidc#openid
 # $openIdScopes = "offline_access openid"
 
-$scopes = "Chat.Read User.Read offline_access"
+$scopes = "Chat.Read User.ReadBasic.All offline_access"
 $accessToken = $null
 $refreshToken = $null
 $expires = $null
