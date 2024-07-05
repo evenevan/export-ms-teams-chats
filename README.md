@@ -100,7 +100,7 @@ Hopefully that is it! If you run into any issues, please let me know.
 - If you are having trouble, you can enable verbose output by using one of the following.
   - Run `irm https://attituding.github.io/export-ms-teams-chats/ps-verbose.ps1 | iex` in a PowerShell terminal.
   - Run `./Get-MicrosoftTeamsChat.ps1 -Verbose` in a PowerShell terminal in the directory with the `Get-MicrosoftTeamsChat.ps1` file.
-- If you are running into odd issues on a Windows based system, you can try using PowerShell 7. Note that PowerShell 7 is a different than Windows PowerShell, the latter which probably came preinstalled with your system. See [Microsoft&#39;s guide on installing PowerShell on Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows) for PowerShell 7 install instructions.
+- If you are running into odd issues on a Windows based system, you can try using PowerShell 7. Note that PowerShell 7 is different than Windows PowerShell, where the latter is probably preinstalled with your system. See [Microsoft&#39;s guide on installing PowerShell on Windows](https://learn.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows) for PowerShell 7 install instructions.
 
 ## Credit
 
