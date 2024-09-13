@@ -6,8 +6,7 @@ $ProgressPreference = "SilentlyContinue"
 # Enable TLSv1.2 for compatibility with older clients
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
-$downloadURL = 'https://github.com/attituding/export-ms-teams-chats/archive/refs/heads/main.zip'
-
+$downloadURL = 'https://github.com/evenevan/export-ms-teams-chats/archive/refs/heads/main.zip'
 $extractedPath = "$([System.IO.Path]::GetTempPath())export-ms-teams-chats"
 $zipPath = "$extractedPath.zip"
 
